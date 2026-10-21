@@ -93,3 +93,5 @@ assets/showcase/  README 效果图
 - 视频号：**袁六伟**
 
 这个 Skill 免费开源。觉得有用的话，欢迎点个 ⭐ Star，再关注公众号或视频号「袁六伟」，那里有更多 AI 视频和自动化的实战分享。企业或文旅合作也可以通过公众号联系。
+
+更多开源 Skill：[talking-head-video-skill](https://github.com/sixwei2025/talking-head-video-skill)
