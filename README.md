@@ -1,5 +1,9 @@
 # 3D 地图短视频 Skill（3d-map-video）
 
+> 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师
+> 📮 更多 AI 视频与自动化实战，关注 **公众号 / 视频号：袁六伟**
+
+
 > 爆火的 3D 地图视频，WorkBuddy / Codex / Claude Code 轻松复刻。一个符合 [Agent Skills](https://agentskills.io/specification) 规范的 skill：让 agent 从选题、脚本到 1080×1920 成片一条龙做出「3D 地图讲城市/历史/战争」竖屏口播短视频。
 
 **English**: An Agent Skill that turns a script into a 1080×1920 vertical "3D map explainer" short video — MapLibre 3D terrain rendered frame-by-frame in headless Chrome, with neon routes, labels, number cards, a full-length CC0 music bed and ffmpeg delivery at ~14 Mbps. Works with any agent that loads `SKILL.md` (Claude Code, Codex, WorkBuddy, …).
@@ -78,3 +82,14 @@ assets/showcase/  README 效果图
 
 ## License
 代码与文档：MIT（见 LICENSE）。第三方组件与数据遵循各自许可。
+
+---
+
+## 关于作者
+
+**袁六伟 · 台州汇芯**：一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师。专注 AI 视频与自动化落地。
+
+- 公众号：**袁六伟**
+- 视频号：**袁六伟**
+
+这个 Skill 免费开源。觉得有用的话，欢迎点个 ⭐ Star，再关注公众号或视频号「袁六伟」，那里有更多 AI 视频和自动化的实战分享。企业或文旅合作也可以通过公众号联系。
