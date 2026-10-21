@@ -1,5 +1,7 @@
 # 3D 地图短视频 Skill（3d-map-video）
 
+<p align="center"><img src="assets/showcase/demo-war.gif" width="360" alt="3D 地图视频演示：井陉之战地球俯冲开场"></p>
+
 > 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师
 > 📮 更多 AI 视频与自动化实战，关注 **公众号 / 视频号：袁六伟**
 
@@ -24,8 +26,9 @@
 | 萨尔浒之战：四路箭头、年份卡、侧视山地、地名牌 |
 
 ### 动态演示 GIF
-- 战争史：`assets/showcase/demo-war.gif`（待补）
-- 城市：`assets/showcase/demo-city.gif`（待补）
+| 战争史：井陉之战（地球俯冲开场） | 城市：台州（3D 地形侧视） |
+|---|---|
+| ![战争史动态演示](assets/showcase/demo-war.gif) | ![城市动态演示](assets/showcase/demo-city.gif) |
 
 ## 安装
 任选一种：
