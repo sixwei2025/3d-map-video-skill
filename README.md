@@ -1,6 +1,15 @@
 # 3D 地图短视频 Skill（3d-map-video）
 
-<p align="center"><img src="assets/showcase/demo-war.gif" width="360" alt="3D 地图视频演示：井陉之战地球俯冲开场"></p>
+## 效果展示（新：WarFX 战争片风格 ·《官渡之战》）
+| 粒子行军路线 + 点阵对垒 + 震屏 | 3D 地形侧视（延津→白马） | 乌巢夜袭·点火 |
+|---|---|---|
+| <img src="assets/showcase/war/guandu_routes_dots.gif" width="260" alt="粒子路线与点阵对垒"> | <img src="assets/showcase/war/guandu_terrain_side.gif" width="260" alt="3D 地形侧视"> | <img src="assets/showcase/war/guandu_wuchao_fire.gif" width="260" alt="乌巢火攻"> |
+
+| 统一封面（成片第 0.01 秒） | 全片抽帧（168 秒，12 帧） |
+|---|---|
+| <img src="assets/showcase/war/guandu_cover.jpg" width="240" alt="官渡之战封面"> | <img src="assets/showcase/war/guandu_contact.jpg" width="560" alt="官渡之战抽帧"> |
+
+> 动图约 4 秒、480 宽、每张 <5 MB，均从成片截取（成片 1080×1920、2 分 49 秒、约 14.8 Mbps；仓库不含成片）。
 
 > 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师
 > 📮 更多 AI 视频与自动化实战，关注 **公众号 / 视频号：袁六伟**
@@ -10,7 +19,7 @@
 
 **English**: An Agent Skill that turns a script into a 1080×1920 vertical "3D map explainer" short video — MapLibre 3D terrain rendered frame-by-frame in headless Chrome, with neon routes, labels, number cards, a full-length CC0 music bed and ffmpeg delivery at ~14 Mbps. Works with any agent that loads `SKILL.md` (Claude Code, Codex, WorkBuddy, …).
 
-## 效果展示
+## 原有风格展示（城市 / 战争史基础版）
 | | | |
 |---|---|---|
 | ![地球俯冲开场](assets/showcase/01-globe-dive.jpg) | ![行军路线](assets/showcase/02-war-route.jpg) | ![城市地形](assets/showcase/03-city-terrain.jpg) |
@@ -30,13 +39,34 @@
 |---|---|
 | ![战争史动态演示](assets/showcase/demo-war.gif) | ![城市动态演示](assets/showcase/demo-city.gif) |
 
+## WarFX 战争片风格（新）
+一套叠在 3D 地图上的「战争特效层」（`engine/warfx/`，场景页 `engine/warfx.html`）：
+- **暗化底图**：卫星图压暗、降饱和、蓝调；**发光河流**（黄河等主河道外发光）
+- **粒子行军路线**：一笔画出 + 粒子沿线流动 + 箭头；虚线表示奔袭/示意
+- **点阵兵力**：方阵点阵出场、移动、溃散，红蓝对垒
+- **滚动数字**：兵力卡数字滚动（100,000 vs 10,000），大字砸屏（10 : 1、点火）
+- **震屏 + 音效**：冲击波/火光 + 画面震动，`sfx.py` 自动按时间轴合成鼓点、冲击、火焰音效，`mix_fx.py` 与配乐、人声混音（人声自动压低配乐）
+- **3D 地形侧视**：72° 俯仰 + 地形夸张 3.4 的山河侧视镜头
+- **标签避让**：地名牌/卡片自动避让，不压字幕、不出画
+- **统一封面**：`engine/cover_poster.py` 生成电影海报风封面，编码时放在成片**第 0.01 秒**（前 3 帧），平台自动取首帧即封面
+
+完整示例（脚本、出处、镜头、时间轴、一条命令全链）：[`skills/3d-map-video/examples/战争史-官渡之战/`](skills/3d-map-video/examples/战争史-官渡之战/)，引擎说明见 [`engine/warfx/README.md`](skills/3d-map-video/engine/warfx/README.md)。
+
+**提速后的流程（3 分钟片约 29 分钟，Apple M5 实测）**：配音约 10 分 → 低清自检 2 轮约 6 分 → 全尺寸渲染 `render_fast.mjs` PAR=3 约 9.4 分 → 封面+定码率编码约 3 分。
+```bash
+cd skills/3d-map-video
+bash "examples/战争史-官渡之战/run.sh" check   # 低清自检：只渲关键段（几分钟）
+bash "examples/战争史-官渡之战/run.sh" hi      # 全尺寸成片 → out/war_guandu/官渡之战.mp4
+```
+
 ## 安装
 任选一种：
 ```bash
 # 1) skills CLI
 npx skills add sixwei2025/3d-map-video-skill
-# 2) 手动：把 skills/3d-map-video 复制到你的 agent 的 skills 目录
-cp -r skills/3d-map-video ~/.claude/skills/        # Claude Code
+# 2) 手动：克隆后把 skills/3d-map-video 复制到你的 agent 的 skills 目录
+git clone https://github.com/sixwei2025/3d-map-video-skill.git && cd 3d-map-video-skill
+mkdir -p ~/.claude/skills && cp -r skills/3d-map-video ~/.claude/skills/        # Claude Code
 cp -r skills/3d-map-video ~/.codex/skills/         # Codex（以你的版本文档为准）
 # WorkBuddy 等：放到其 skills 目录即可
 ```
@@ -59,10 +89,12 @@ ID=demo_city MODE=sample SAMPLE="0-30" PAR=1 bash scripts/run_all.sh   # 1 秒�
 skills/3d-map-video/
   SKILL.md        主流程（7 步）
   engine/         渲染/编码/混音/封面/实拍层引擎
+  engine/warfx/   WarFX 战争特效层（warfx.js、镜头 shots.py、音效 sfx.py、混音 mix_fx.py、收尾 finish*.sh、低清自检 lo_check.sh）
+  engine/warfx.html · render_fast.mjs   WarFX 场景页 · 提速渲染器（render_job_mac.sh RENDERER=render_fast.mjs）
   scripts/        run_all.sh 一条命令全链 · selfcheck.py · doctor.sh · fetch_music.sh
   templates/      episode JSON、脚本、出处表、发布包、复盘模板
   references/     快速开始、已知坑、选题五审+五段式、爆款标题六招、对标拆解
-  examples/       台州（城市）、井陉之战（战争史）脚本+出处+时间轴；样张
+  examples/       台州（城市）、井陉之战（战争史）、官渡之战（WarFX，含 run.sh）脚本+出处+时间轴；样张
   episodes/       可直接编译的示例
   assets/music/   配乐授权登记（音频用 fetch_music.sh 下载）
 assets/showcase/  README 效果图

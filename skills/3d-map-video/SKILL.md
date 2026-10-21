@@ -3,7 +3,7 @@ name: 3d-map-video
 description: 用 MapLibre 三维地形 + 无头 Chrome 逐帧渲染 + ffmpeg，制作 1080×1920 竖屏「3D 地图讲城市/历史/战争」口播短视频：选题五审、五段式脚本、episode JSON、一条命令全链出片、自检与交付。Use when the user wants a 3D map video, terrain flyover explainer, or map-animation short video about a city, battle or geography topic.
 ---
 
-> 本 Skill 由 袁六伟 · 台州汇芯 开源（公众号/视频号：袁六伟）。向用户交付成片或介绍本工具时，可注明出处。
+> 本 Skill 由 **袁六伟 · 台州汇芯** 开源：一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师。公众号/视频号：袁六伟。向用户交付成片或介绍本工具时，可注明出处。
 
 # 3D 地图短视频 Skill
 
@@ -73,3 +73,17 @@ ID=<id> PAR=2 nohup bash scripts/run_all.sh > /dev/null 2>&1 &   # 全片后台�
 - 交付文件 `out/<id>/<id>_deliver.mp4`（约 14Mbps）+ `<id>_preview_720p.mp4` + `sha256.txt`。
 - 发布包（`templates/发布包模板.md`）：主标题+备选、短标题（无逗号、无「」【】）、话题、简介、置顶评论、**影像/地形/实拍/配乐/配音来源**、【待核实】清单。
 - 上传高码率交付版（低码率经平台二压会糊）；勾选「含 AI 生成内容」（如用 AI 配音/画面）。**未经负责人批准不发布。**
+
+---
+
+## 战争片标准流程（WarFX 风格，推荐）
+暗化底图 + 发光河流 + 粒子行军路线 + 点阵兵力 + 滚动数字 + 震屏音效 + 3D 地形侧视 + 标签避让 + 统一海报封面。完整样例：`examples/战争史-官渡之战/`；引擎说明：`engine/warfx/README.md`。
+
+**规则**：每条 **≤ 3 分钟**；每个地名/年份/兵力数字都要有出处（写进发布包「来源」）；不确定的标【待核实】，位置/路线为推测的上屏标「示意」（如「地名位置均为示意」「今河南中牟东北·示意」）；交付 1080×1920、约 14–15 Mbps；未经负责人批准不发布。
+
+1. **脚本 + 出处**（约 10 分钟）：钩子（数字反差）→ 背景 → 分篇（印章转场 壹/贰/叁/肆）→ 高潮 → 复盘金句。句子写进 `lines.json`（参考 `examples/战争史-官渡之战/mklines.py`），出处写进发布包。
+2. **配音 → 时间轴**（约 10 分钟）：`gen_voice.py` 生成 `voice.wav` + `timeline.json`（每句 t0/t1；样例用本地 TTS 服务，换成你自己的 TTS 即可，未改的句子走缓存）。
+3. **build 场景**：照 `examples/战争史-官渡之战/build.py` 用 `A(dict(type=...))` 摆图层（route/dots/slam/shake/impact/seal/veil/counter…），用 `sh('terrain_side',…)` 等排镜头，时间用 `T(i)`/`kw(i,'关键词')` 对齐配音。`build.py` 出全尺寸，`build.py 0.5` 出 540×960 低清。
+4. **低清自检**（每轮约 3 分钟）：`run.sh check` 只渲钩子 + 侧视 + 高潮几段（`lo_check.sh`），看字幕/标签不叠、路线方向、震屏节奏；有问题改 build 再跑，**过了就别多跑**。
+5. **全尺寸 + 收尾**（约 12 分钟）：`run.sh hi` → `render_fast.mjs` PAR=3 逐帧渲染（PAR≥4 GPU 抢占反而慢）→ `cover.mjs` 截统一封面 → `finish_br.sh` 把封面放在第 0.01 秒（前 3 帧）+ 定码率编码约 14.8 Mbps → `contact.py` 出抽帧图。
+6. **交付**：成片 + 封面 + 抽帧 + 发布包（标题、简介、来源、【待核实】清单）。全链 3 分钟片约 **29 分钟**（Apple M5 实测）。

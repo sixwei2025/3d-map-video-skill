@@ -1,0 +1,66 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- WarFX 场景页（2026-10-21）：暗底卫星图 + WarFX 发光图层 + HUD。读 ?scene=<scene.json>&tiles=<tileproxy>；render_mac.mjs 用 SCENE_PAGE=warfx.html 驱动 -->
+<link rel="stylesheet" href="vendor/maplibre-gl.css"><link rel="stylesheet" href="vendor/noto-sans-sc/index.css">
+<script src="vendor/maplibre-gl.js"></script><script src="warfx/warfx.js"></script>
+<style>html,body{margin:0;overflow:hidden;background:#000}#stage{position:absolute;left:0;top:0}#map,#fx,#vig{position:absolute;left:0;top:0}#hud{position:absolute;left:0;top:0;z-index:5}#vig{pointer-events:none;z-index:3}#fx{z-index:2}
+.maplibregl-ctrl-attrib,.maplibregl-ctrl-logo{display:none!important}</style></head>
+<body><div id="stage"><div id="map"></div><canvas id="fx"></canvas><div id="vig"></div></div><canvas id="hud"></canvas>
+<script>
+const Q=new URLSearchParams(location.search);let S,map,W,H,KS=1;const {E,easeIO}=WarFX;
+function cam(t){const K=S.camera;let i=0;while(i<K.length-2&&t>K[i+1].t)i++;const a=K[i],b=K[i+1]||a,u=b===a?0:(EZ[b.ease||'io']||easeIO)(E(t,a.t,b.t));const L=(x,y)=>x+(y-x)*u;
+  return {center:[L(a.center[0],b.center[0]),L(a.center[1],b.center[1])],zoom:L(a.zoom,b.zoom)+Math.log2(KS),pitch:Math.min(S.maxPitch||75,L(a.pitch||0,b.pitch||0)),bearing:L(a.bearing||0,b.bearing||0)};}
+// v2（1021b）：关键帧 ease = io(默认)|linear|out|in（作用于「到达该关键帧」那一段）；exag = 该关键帧的地形夸张（缺省 terrain.exaggeration）
+const EZ={io:easeIO,linear:x=>x,out:x=>1-Math.pow(1-x,3),in:x=>x*x*x};
+function camKey(t){const K=S.camera;let i=0;while(i<K.length-2&&t>K[i+1].t)i++;return [K[i],K[i+1]||K[i]];}
+function exagAt(t){const T=S.terrain;if(!T)return 0;const [a,b]=camKey(t);const ea=a.exag??T.exaggeration??1.5,eb=b.exag??T.exaggeration??1.5;const u=b===a?0:(EZ[b.ease||'io']||easeIO)(E(t,a.t,b.t));return ea+(eb-ea)*u;}
+async function init(){S=await fetch(Q.get('scene')).then(r=>r.json());W=S.w;H=S.h;KS=S.designW?S.w/S.designW:1; // 低清预览：designW=1080、w=540 → 所有像素参数×0.5、地图 zoom−1，画面构图不变
+
+  for(const id of ['stage','map','vig']){const e=document.getElementById(id);e.style.width=W+'px';e.style.height=H+'px';}
+  for(const id of ['fx','hud']){const e=document.getElementById(id);e.width=W;e.height=H;}
+  const B=S.basemap||{};document.getElementById('vig').style.background=`radial-gradient(ellipse at 50% 48%,rgba(0,0,0,0) 35%,rgba(0,0,0,${B.vignette??0.75}) 100%)`;
+  const TP=Q.get('tiles')||'';const sat=TP?TP+'/esri/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',dem=TP?TP+'/dem/{z}/{x}/{y}.png':'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+  const layers=[{id:'bg',type:'background',paint:{'background-color':'#02040a'}},{id:'sat',type:'raster',source:'sat',paint:{'raster-fade-duration':0,'raster-saturation':B.saturation??-0.55,'raster-contrast':B.contrast??0.2,'raster-brightness-max':B.brightness??0.34,'raster-hue-rotate':B.hue??0}}];
+  const T=S.terrain||null,RIM=(S.light&&S.light.rim)??(T?0.55:0);
+  if(B.hillshade!==false)layers.push({id:'hs',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':B.hillshadeExag??0.45,'hillshade-shadow-color':'rgba(0,0,0,0.8)','hillshade-highlight-color':'rgba(140,170,210,0.18)','hillshade-accent-color':'rgba(0,0,0,0.4)'}});
+  // 边缘光：第二层 hillshade，逆光方向只给高光（冷青），阴影透明 → 山脊亮边
+  if(RIM>0)layers.push({id:'rim',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':Math.min(1,RIM),'hillshade-shadow-color':'rgba(0,0,0,0)','hillshade-accent-color':'rgba(0,0,0,0)','hillshade-highlight-color':(S.light&&S.light.rimColor)||'rgba(120,200,255,0.55)','hillshade-illumination-direction':(S.light&&S.light.rimDir)??135,'hillshade-illumination-anchor':'viewport'}});
+  if(B.tint)layers.push({id:'tint',type:'background',paint:{'background-color':B.tint,'background-opacity':B.tintOpacity??0.25}});
+  await document.fonts.load('900 80px "Noto Sans SC Variable"',S.text||'官渡');await document.fonts.load('800 40px "Noto Sans SC Variable"',S.text||'官渡');await document.fonts.load('700 40px "Noto Sans SC Variable"',S.text||'官渡');await document.fonts.load('600 40px "Noto Sans SC Variable"',S.text||'官渡');
+  const c0=cam(0);map=new maplibregl.Map({container:'map',interactive:false,attributionControl:false,fadeDuration:0,pixelRatio:1,maxPitch:85,center:c0.center,zoom:c0.zoom,pitch:c0.pitch,bearing:c0.bearing,
+    canvasContextAttributes:{antialias:true,preserveDrawingBuffer:true},style:{version:8,sources:{sat:{type:'raster',tiles:[sat],tileSize:256,maxzoom:B.maxzoom||12},dem:{type:'raster-dem',tiles:[dem],tileSize:256,maxzoom:11,encoding:'terrarium'},...(T?{demt:{type:'raster-dem',tiles:[dem],tileSize:256,maxzoom:T.maxzoom||11,encoding:'terrarium'}}:{})},layers,...(S.projection?{projection:{type:S.projection}}:{}),
+      ...(T&&S.sky!==false?{sky:Object.assign({'sky-color':'#02060f','horizon-color':'#16304c','fog-color':'#07111f','sky-horizon-blend':0.7,'horizon-fog-blend':0.55,'fog-ground-blend':0.35,'atmosphere-blend':0},S.sky||{})}:{})}});
+  await new Promise(r=>map.once('load',r));if(T)map.setTerrain({source:'demt',exaggeration:exagAt(0)});
+  map.on('error',e=>console.log('maperr',String(e&&e.error&&e.error.message||e).slice(0,120)));window.READY=true;}
+// 地形感知投影：map.project 已含高程（贴地不飘）；occ=1 = 被山体挡住（屏幕点反投影落到别处）→ 线断开、点/标签淡出（不穿模）
+function makeP(){const T=S.terrain;if(!T)return ll=>map.project(ll);const mpp=40075016*Math.cos(map.getCenter().lat*Math.PI/180)/(512*Math.pow(2,map.getZoom()));const tol=(T.occTol||30)*mpp;const cache=new Map();
+  return ll=>{const k=ll[0].toFixed(5)+','+ll[1].toFixed(5);let p=cache.get(k);if(p)return p;const q=map.project(ll);p={x:q.x,y:q.y,occ:0};
+    if(T.occlude!==false&&q.x>-50&&q.x<W+50&&q.y>-50&&q.y<H+50){const b=map.unproject([q.x,q.y]);if(b){const dx=(b.lng-ll[0])*111320*Math.cos(ll[1]*Math.PI/180),dy=(b.lat-ll[1])*110540;if(Math.hypot(dx,dy)>tol*(1+3*Math.max(0,1-q.y/H)))p.occ=1;}}
+    cache.set(k,p);return p;};}
+// 体积光：地平线雾光带 + 斜光束（屏幕空间，随 pitch 增强，画在 fx 最底层）
+function volume(c,cm){const L=S.light||{};const k=(L.volume??(S.terrain?0.5:0))*Math.max(0,Math.min(1,(cm.pitch-25)/35));if(k<=0)return;c.save();c.globalCompositeOperation='lighter';
+  const hy=H*(L.horizonY??0.2);const g=c.createLinearGradient(0,hy-H*0.12,0,hy+H*0.22);g.addColorStop(0,'rgba(40,90,150,0)');g.addColorStop(0.45,`rgba(60,120,190,${0.22*k})`);g.addColorStop(1,'rgba(40,90,150,0)');c.fillStyle=g;c.fillRect(0,hy-H*0.12,W,H*0.34);
+  const r=WarFX.rng(77),sw=cm.bearing*0.01;for(let i=0;i<5;i++){const x0=W*(0.1+0.8*r()),w0=W*(0.05+0.07*r());const gg=c.createLinearGradient(0,0,0,H*0.75);gg.addColorStop(0,`rgba(150,190,255,${0.07*k})`);gg.addColorStop(1,'rgba(150,190,255,0)');c.fillStyle=gg;c.beginPath();c.moveTo(x0+sw*40,0);c.lineTo(x0+w0+sw*40,0);c.lineTo(x0+w0*3.2-W*0.1,H*0.75);c.lineTo(x0-w0*1.2-W*0.1,H*0.75);c.closePath();c.fill();}
+  c.restore();}
+window.renderFrame=async function(t){const c=cam(t);if(S.terrain&&map.terrain){const ex=exagAt(t);if(Math.abs(map.terrain.exaggeration-ex)>1e-4)map.setTerrain({source:'demt',exaggeration:ex});}map.jumpTo(c);
+  await new Promise(r=>{map.once('render',r);map.triggerRepaint();});const st=performance.now(),MAX=window.SETTLE_MAX||8000;
+  // 1021d 提速：FAST=1 时瓦片已就绪就不再多等一次重绘，轮询 8ms（默认行为不变）
+  const ready0=map.areTilesLoaded()&&!map.isMoving();
+  while(performance.now()-st<MAX&&!(map.areTilesLoaded()&&!map.isMoving()))await new Promise(r=>setTimeout(r,window.FAST?8:40));
+  if(!(window.FAST&&ready0))await new Promise(r=>{map.once('render',r);map.triggerRepaint();});
+  const P0=makeP(),P=KS===1?P0:(ll=>{const p=P0(ll);return {x:p.x/KS,y:p.y/KS,occ:p.occ};}),els=S.elements,DW=W/KS,DH=H/KS;let [sx,sy]=WarFX.shake(els,t);sx*=KS;sy*=KS;document.getElementById('stage').style.transform=`translate(${sx}px,${sy}px) scale(${1+(sx||sy?0.02:0)})`;window.__sh=[sx,sy];
+  const fx=document.getElementById('fx').getContext('2d');fx.setTransform(1,0,0,1,0,0);fx.clearRect(0,0,W,H);volume(fx,c);fx.setTransform(KS,0,0,KS,0,0);WarFX.layout(fx,els,t,P,DW,DH,S.avoid);WarFX.draw(fx,els,t,P,DW,DH,'map');
+  const hd=document.getElementById('hud').getContext('2d');hd.setTransform(1,0,0,1,0,0);hd.clearRect(0,0,W,H);hd.setTransform(KS,0,0,KS,0,0);if(!Q.get('cover'))WarFX.draw(hd,els,t,P,DW,DH,'hud');hd.setTransform(1,0,0,1,0,0);
+  if(Q.get('cover')&&S.cover)drawCover(hd,S.cover);
+  const fade=S.fadeIn?1-E(t,0,S.fadeIn):0;if(fade>0){hd.fillStyle=`rgba(0,0,0,${fade})`;hd.fillRect(0,0,W,H);}
+  window.__last={t,ms:Math.round(performance.now()-st),pending:map.areTilesLoaded()?0:1};return true;};
+function drawCover(c,cv){c.save();const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(0,0,0,0.75)');g.addColorStop(0.32,'rgba(0,0,0,0.15)');g.addColorStop(0.7,'rgba(0,0,0,0.1)');g.addColorStop(1,'rgba(0,0,0,0.8)');c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
+  for(const l of cv.lines){c.font=`900 ${l.size}px "Noto Sans SC Variable"`;if(l.bg){const bw=c.measureText(l.text).width+80,bh=l.size*1.45;c.fillStyle=l.bg;c.beginPath();c.roundRect(W/2-bw/2,l.y-bh/2,bw,bh,14);c.fill();}c.lineWidth=l.stroke||16;c.strokeStyle='rgba(0,0,0,0.92)';c.strokeText(l.text,W/2,l.y);c.shadowColor=l.glow||'#C8102E';c.shadowBlur=30;c.fillStyle=l.color||'#fff';c.fillText(l.text,W/2,l.y);c.shadowBlur=0;}c.restore();}
+// 1021d：页面内合成取帧（地图 WebGL 画布 + fx + 暗角 + hud，含震屏），代替整页截图；返回 JPEG dataURL
+window.grabFrame=function(q){const o=window.__oc||(window.__oc=document.createElement('canvas'));if(o.width!==W){o.width=W;o.height=H;}const c=o.getContext('2d');c.setTransform(1,0,0,1,0,0);c.fillStyle='#02040a';c.fillRect(0,0,W,H);
+  const [sx,sy]=window.__sh||[0,0],s=1+(sx||sy?0.02:0);c.save();c.translate(W/2+sx,H/2+sy);c.scale(s,s);c.translate(-W/2,-H/2);c.drawImage(map.getCanvas(),0,0,W,H);c.drawImage(document.getElementById('fx'),0,0);
+  const B=S.basemap||{},k=0.96*H/W,rx=Math.sqrt((W/2)**2+(0.52*H/k)**2);c.save();c.translate(W/2,H*0.48);c.scale(1,k);const g=c.createRadialGradient(0,0,0,0,0,rx);g.addColorStop(0.35,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${B.vignette??0.75})`);c.fillStyle=g;c.fillRect(-W,-H/k,2*W,2*H/k);c.restore();c.restore();
+  c.drawImage(document.getElementById('hud'),0,0);return o.toDataURL('image/jpeg',q);};
+init();
+</script></body></html>

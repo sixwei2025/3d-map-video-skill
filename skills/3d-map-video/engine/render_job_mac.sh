@@ -16,14 +16,14 @@ for i in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:$PORT/engine/scen
 export TILES=http://127.0.0.1:$TPORT
 PAR=${PAR:-1}; L=$(( (B-A+PAR-1)/PAR ))
 for k in $(seq 0 $((PAR-1))); do a=$((A+k*L)); b=$((a+L)); [ $b -gt $B ] && b=$B; [ $a -ge $b ] && continue
-  ( for i in 1 2 3 4 5; do node engine/render_mac.mjs "$W" $PORT "$a-$b" && break; echo "retry $i"; sleep 5; done ) & PIDS="$PIDS $!"
+  ( for i in 1 2 3 4 5; do node engine/${RENDERER:-render_mac.mjs} "$W" $PORT "$a-$b" && break; echo "retry $i"; sleep 5; done ) & PIDS="$PIDS $!"
 done
 wait $PIDS
 # v3.1 预取模式：只把瓦片拉进缓存，不截图、不做缺帧检查
 if [ -n "${PREFETCH:-}" ]; then echo "prefetch tileproxy $(curl -s http://127.0.0.1:$TPORT/stats)"; exit 0; fi
 for i in 1 2; do
   MISS=$(python3 engine/frames.py check "$W" 1 $A $B) && break
-  echo "缺帧/坏帧: $MISS → 强制重渲"; FORCE=1 node engine/render_mac.mjs "$W" $PORT "$MISS"
+  echo "缺帧/坏帧: $MISS → 强制重渲"; FORCE=1 node engine/${RENDERER:-render_mac.mjs} "$W" $PORT "$MISS"
 done
 python3 engine/frames.py check "$W" 1 $A $B >/dev/null || echo "帧仍不完整（编码时用相邻帧补）"
 echo "tileproxy $(curl -s http://127.0.0.1:$TPORT/stats)"
