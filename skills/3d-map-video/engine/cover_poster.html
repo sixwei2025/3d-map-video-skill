@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8"><!-- 3D 地图系列统一封面（A 电影海报风，2026-10-18 定稿）。数据：?data=<cover.json>&bg=<底图>；engine/cover_poster.py 生成。 -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#050505}
+.p{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Noto Sans CJK SC',sans-serif;color:#fff}
+.bg{position:absolute;inset:-40px;background:var(--bg) center 60%/cover;filter:grayscale(.7) contrast(1.5) brightness(.55);transform:scale(1.06)}
+.tint{position:absolute;inset:0;background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.85) 14%,rgba(20,4,6,.25) 34%,rgba(20,4,6,.15) 55%,rgba(0,0,0,.75) 78%,#000 100%)}
+.red{position:absolute;inset:0;background:linear-gradient(180deg,#0b1a1f 0%,#C8102E 45%,#7a0a1c 70%,#0b1a1f 100%);mix-blend-mode:color;opacity:.5}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 40%,rgba(0,0,0,.85) 100%)}
+.band{position:absolute;left:0;right:0;top:1160px;height:260px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 30%,rgba(0,0,0,.55) 70%,transparent)}
+.reg{position:absolute;width:40px;height:40px;border-color:rgba(255,255,255,.4);border-style:solid}
+.glow{position:absolute;left:-200px;right:-200px;top:690px;height:520px;background:radial-gradient(ellipse 50% 40% at 50% 50%,rgba(255,40,60,.55),rgba(200,16,46,.25) 40%,transparent 70%);mix-blend-mode:screen}
+.streak{position:absolute;left:0;right:0;top:948px;height:3px;background:linear-gradient(90deg,transparent,rgba(255,90,100,.9) 30%,#fff 50%,rgba(255,90,100,.9) 70%,transparent);filter:blur(1px);box-shadow:0 0 30px 8px rgba(200,16,46,.6)}
+.grain{position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay}
+.top{position:absolute;top:120px;left:0;right:0;text-align:center;font-size:24px;letter-spacing:12px;color:rgba(255,255,255,.72);font-weight:400}
+.top b{color:#fff;font-weight:700}
+.kicker{position:absolute;top:470px;left:0;right:0;text-align:center;font-family:'Inter Tight','Inter';font-size:30px;letter-spacing:22px;color:#ff4a5c;font-weight:600}
+.title{position:absolute;top:540px;left:0;right:0;text-align:center;font-family:'Noto Serif CJK SC',serif;font-weight:700;font-size:268px;line-height:1;letter-spacing:18px;padding-left:18px;
+ background:linear-gradient(180deg,#fff 0%,#fff 55%,#f3c9cd 100%);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 0 40px rgba(200,16,46,.65)) drop-shadow(0 12px 30px rgba(0,0,0,.8))}
+.sub{position:absolute;top:1000px;left:0;right:0;text-align:center;font-size:62px;font-weight:900;letter-spacing:10px}
+.sub2{position:absolute;top:1094px;left:0;right:0;text-align:center;font-size:62px;font-weight:900;letter-spacing:10px;color:#fff}
+.sub2 em{font-style:normal;color:#fff;background:#C8102E;padding:0 16px 4px;margin:0 6px}
+.coord{position:absolute;top:1238px;left:0;right:0;text-align:center;font-family:'Roboto Mono',monospace;font-size:22px;letter-spacing:6px;color:rgba(255,255,255,.65)}
+.coord i{display:inline-block;width:60px;height:1px;background:rgba(255,255,255,.45);vertical-align:middle;margin:0 18px}
+.quote{position:absolute;top:1330px;left:0;right:0;text-align:center;font-family:'Noto Serif CJK SC';font-size:34px;letter-spacing:14px;color:#ffb3ba}
+.bill{position:absolute;bottom:250px;left:90px;right:90px;text-align:center;border-top:1px solid rgba(255,255,255,.3);padding-top:30px}
+.bill .r{display:flex;justify-content:space-between;font-size:24px;letter-spacing:4px;color:rgba(255,255,255,.8)}
+.bill .r span b{display:block;font-size:17px;letter-spacing:6px;color:rgba(255,255,255,.45);font-weight:400;margin-bottom:6px}
+.bill .r span.x{color:rgba(255,255,255,.42)}.bill .r span.x s{text-decoration-color:#C8102E;text-decoration-thickness:3px}.bill .r span.k{color:#fff}.bill .r span.k b{color:#ff4a5c}
+.brand{position:absolute;bottom:130px;left:0;right:0;text-align:center;font-size:20px;letter-spacing:10px;color:rgba(255,255,255,.55)}
+.brand b{color:#C8102E;font-size:26px;letter-spacing:6px}
+.no{position:absolute;top:118px;right:70px;font-family:'Roboto Mono';font-size:18px;color:rgba(255,255,255,.5)}
+
+.bill .r{gap:10px}</style></head><body><div class="p" id="P">
+<div class="bg"></div><div class="red"></div><div class="tint"></div><div class="vig"></div><div class="band"></div>
+<div class="reg" style="top:60px;left:60px;border-width:1px 0 0 1px"></div><div class="reg" style="top:60px;right:60px;border-width:1px 1px 0 0"></div><div class="reg" style="bottom:60px;left:60px;border-width:0 0 1px 1px"></div><div class="reg" style="bottom:60px;right:60px;border-width:0 1px 1px 0"></div>
+<div class="glow"></div><div class="streak"></div>
+<svg class="grain" width="1080" height="1920"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+<div class="top" id="top"></div><div class="kicker" id="kicker"></div><div class="title" id="title"></div>
+<div class="sub" id="sub"></div><div class="sub2" id="sub2"></div><div class="coord" id="coord"></div><div class="quote" id="quote"></div>
+<div class="bill"><div class="r" id="bill"></div></div><div class="brand" id="brand"></div>
+</div>
+<script>
+// 参数：top(可含<b>) kicker title sub sub2[前半,红底强调] coord[3] quote generals[{label,name,state,keep}] brand series；标题字号按字数自动缩放
+const q=new URLSearchParams(location.search), esc=x=>String(x??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+fetch(q.get('data')).then(r=>r.json()).then(d=>{
+  document.querySelector('.bg').style.setProperty('--bg',`url(${q.get('bg')||d.bg_url||'bg.jpg'})`);
+  top_.innerHTML=d.top||''; kicker.textContent=d.kicker||''; const T=document.getElementById('title'); T.textContent=d.title;
+  const n=[...d.title].length; T.style.fontSize=(n<=3?268:n===4?210:n===5?170:140)+'px';
+  sub.textContent=d.sub||''; const s2=d.sub2||[]; sub2.innerHTML=esc(s2[0]||'')+(s2[1]?`<em>${esc(s2[1])}</em>`:'');
+  coord.innerHTML=(d.coord||[]).map(esc).join('<i></i>'); quote.textContent=d.quote||'';
+  bill.innerHTML=(d.generals||[]).map(g=>g.keep?`<span class="k"><b>${esc(g.label)} · ${esc(g.state)}</b>${esc(g.name)}</span>`:`<span class="x"><b>${esc(g.label)} · ${esc(g.state)}</b><s>${esc(g.name)}</s></span>`).join('');
+  brand.innerHTML=`<b>${esc(d.brand||'')}</b>　·　${esc(d.series||'')}`;
+  document.fonts.ready.then(()=>{window.COVER_READY=true;});});
+const top_=document.getElementById('top');
+</script></body></html>

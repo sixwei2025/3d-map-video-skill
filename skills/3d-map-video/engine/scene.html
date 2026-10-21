@@ -1,0 +1,298 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="vendor/noto-sans-sc/index.css">
+<script src="vendor/maplibre-gl.js"></script>
+<style>
+html,body{margin:0;overflow:hidden;background:#000;font-family:"Noto Sans SC Variable","Noto Sans CJK SC",sans-serif}
+#stars,#map,#overlay{position:absolute;left:0;top:0}
+#stars{z-index:0}#map{z-index:1}#overlay{z-index:4}
+#grade,#fx,#vig,#dim{position:absolute;left:0;top:0;pointer-events:none}#grade{z-index:2}#fx{z-index:3}#vig{z-index:3}#dim{z-index:5;background:#000;opacity:0}
+#grade div{position:absolute;inset:0;mix-blend-mode:soft-light;opacity:0}
+.dend{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.8)}
+.maplibregl-ctrl-attrib,.maplibregl-ctrl-logo{display:none!important}
+.pin{position:absolute;left:0;top:0;will-change:transform}
+.pin .dot{position:absolute;width:18px;height:18px;border-radius:50%;left:-9px;top:-9px;border:3px solid #fff;box-sizing:border-box;box-shadow:0 0 12px rgba(0,0,0,.7)}
+.pin svg{position:absolute;left:0;top:0;overflow:visible}
+.pin .box{position:absolute;white-space:nowrap;color:#fff;font-weight:700;line-height:1;border-radius:6px;background:rgba(12,14,18,.62);border:2.5px solid;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.pin .sub{display:block;font-weight:500;margin-top:6px;color:#e9f0f3}
+.lbl{position:absolute;left:0;top:0;white-space:nowrap;font-weight:800;text-shadow:0 0 4px #000,0 0 8px #000,2px 2px 2px #000}
+#hud{position:absolute;left:0;top:0;z-index:6;pointer-events:none}
+.fr{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box}
+.tt{font-weight:900;color:#fff;paint-order:stroke fill;-webkit-text-stroke:14px #C8102E;text-shadow:0 0 18px rgba(200,16,46,.65),0 0 36px rgba(200,16,46,.45);line-height:1.15;letter-spacing:6px}
+.ts{font-weight:700;color:#FFD84A;paint-order:stroke fill;-webkit-text-stroke:8px #000;line-height:1.3;margin-top:8px}
+.cap{background:rgba(0,0,0,.42)}
+.cap span{font-weight:700;color:#fff;paint-order:stroke fill;-webkit-text-stroke:10px #000;line-height:1.25}
+.cap .hl{color:#FFD84A}
+.pnl{background:rgba(10,12,16,.70);border:2.5px solid #C8102E;border-radius:8px;padding:26px 30px;justify-content:flex-start;align-items:flex-start;text-align:left;flex-direction:column;color:#eef2f4;font-weight:500;line-height:1.5}
+.pnl .ph{font-weight:700;color:#FF5A6E;line-height:1.6}.pnl .pk{font-weight:700;color:#FFD84A}
+.crd{justify-content:flex-end;color:rgba(255,255,255,.78);font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
+.ctr{flex-direction:column;align-items:flex-end;justify-content:center}.ctr .d{font-weight:900;color:#fff;paint-order:stroke fill;-webkit-text-stroke:12px #C8102E;line-height:1.05}.ctr .s{font-weight:700;color:#FFD84A;paint-order:stroke fill;-webkit-text-stroke:7px #000;margin-top:4px}
+.chips{justify-content:flex-start;gap:12px;flex-wrap:nowrap}.chip{display:flex;align-items:center;gap:8px;padding:6px 12px 7px;border-radius:8px;background:rgba(10,12,16,.72);border:2.5px solid;color:#fff;font-weight:700;white-space:nowrap;transition:none}.chip .sq{width:.8em;height:.8em;border-radius:3px}.chip.off{opacity:.38;filter:grayscale(1)}.chip.off .tx{text-decoration:line-through}.chip .st{color:#FFD84A;font-size:.8em}
+.card{flex-direction:column;background:rgba(10,12,16,.80);border:3px solid #C8102E;border-radius:14px;padding:18px 24px}.card .b{font-weight:900;color:#FFD84A;line-height:1.1;paint-order:stroke fill;-webkit-text-stroke:6px #000}.card .l{color:#fff;font-weight:700;margin-top:8px;line-height:1.3}
+.ahead{position:absolute;left:0;top:0;width:0;height:0;will-change:transform}
+/* v3：生长光点、上下文城市/河名 */
+.tip{position:absolute;left:0;top:0;width:0;height:0;will-change:transform}.tip i{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff 18%,rgba(255,255,255,.55) 32%,rgba(255,255,255,0) 70%)}
+.cty{position:absolute;left:0;top:0;white-space:nowrap;color:#fff;font-weight:600;line-height:1;text-shadow:0 0 3px #000,0 0 6px #000,1px 1px 2px #000;will-change:transform}.cty b{display:inline-block;width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 4px #000;margin-right:7px;vertical-align:middle;position:relative;top:-2px}
+.rvn{position:absolute;left:0;top:0;white-space:nowrap;color:#9FF6FF;font-weight:800;letter-spacing:4px;line-height:1;text-shadow:0 0 4px #003a44,0 0 10px #003a44,1px 1px 2px #000}
+/* v4（2026-10-20b）复刻「三维地图看世界」：body.sw 时生效；旧 episode 不受影响 */
+body.sw .cap{background:none}body.sw .cap span{-webkit-text-stroke:9px rgba(0,0,0,.85);text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 14px rgba(0,0,0,.6)}
+body.sw .pin .box{border:none!important;border-radius:4px;box-shadow:0 3px 10px rgba(0,0,0,.55),0 0 16px var(--gl);font-weight:900;letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+body.sw .pin .sub{color:#fff;opacity:.92;font-weight:700;letter-spacing:1px}
+body.sw .pin .dot{border-width:4px;box-shadow:0 0 14px var(--gl),0 0 4px #000}
+body.sw .card{background:rgba(8,10,14,.78);border:3px solid #FFD84A;border-radius:6px;box-shadow:0 0 24px rgba(255,216,74,.25)}
+body.sw .card .b{color:#fff;-webkit-text-stroke:0;text-shadow:0 0 18px rgba(255,216,74,.55),0 3px 6px #000}body.sw .card .l{color:#FFD84A}
+body.sw .ctr .d{-webkit-text-stroke:0;background:#fff;color:#111;padding:4px 18px 8px;border-left:14px solid #C8102E;text-shadow:none}
+body.sw .ctr .s{-webkit-text-stroke:0;color:#fff;text-shadow:0 0 4px #000,0 0 10px #000}
+.wm{justify-content:flex-start;color:#fff;font-weight:800;letter-spacing:2px;text-shadow:0 0 4px #000,0 0 10px rgba(0,0,0,.8)}.wm i{display:inline-block;width:.9em;height:.9em;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0,#7fd6ff 30%,#1a6fd1 70%);margin-right:.4em;box-shadow:0 0 8px rgba(0,0,0,.7)}
+.wm2{justify-content:flex-end;color:rgba(255,255,255,.85);font-weight:600;text-shadow:0 0 4px #000}
+</style></head>
+<body><script>if(location.search.includes("nohud=1"))document.write("<style>#hud{display:none!important}</style>")</script><canvas id="stars"></canvas><div id="map"></div><div id="grade"></div><canvas id="fx"></canvas><div id="vig"></div><div id="overlay"></div><div id="dim"></div><div id="hud"></div>
+<script>
+// 数据驱动地图镜头引擎（由乾陵样片 mapscene/scene.html 抽象而来）。读取 ?scene=<path> 的 scene.json（engine/compile.py 生成）。
+const E=(t,a,b)=>Math.min(1,Math.max(0,(t-a)/(b-a))), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, easeOut=x=>1-Math.pow(1-x,3);
+const back=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+let S,map;
+// ---------- HUD：片名/字幕/面板/来源注记（复刻原 Hypit look，品牌红 #C8102E，Noto Sans SC）----------
+const HUD=[];
+function box(f,W,H,cls){const e=document.createElement('div');e.className='fr '+cls;e.style.left=f[0]/100*W+'px';e.style.top=f[1]/100*H+'px';e.style.width=(f[2]-f[0])/100*W+'px';e.style.height=(f[3]-f[1])/100*H+'px';document.getElementById('hud').appendChild(e);return e;}
+const esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function buildHud(W,H){const L=S.layout, z=L.sizes; document.getElementById('hud').style.width=W+'px';document.getElementById('hud').style.height=H+'px'; let all='';
+  if(S.title){const e=box(L.title,W,H,'');e.style.flexDirection='column';e.innerHTML=`<div class="tt" style="font-size:${z.title}px">${esc(S.title.text)}</div>`+(S.title.sub?`<div class="ts" style="font-size:${z.titlesub}px">${esc(S.title.sub)}</div>`:'');HUD.push({el:e,t0:S.title.t[0],t1:S.title.t[1],kind:'title'});all+=S.title.text+(S.title.sub||'');}
+  for(const c of S.captions||[]){const e=box(L.sub,W,H,'cap');let html='',i=0,t=c.text;const hl=(c.hl||[]).filter(Boolean).sort((a,b)=>b.length-a.length);
+    while(i<t.length){const m=hl.find(h=>t.startsWith(h,i));if(m){html+=`<span class="hl">${esc(m)}</span>`;i+=m.length;continue;}let j=i;while(j<t.length&&!hl.some(h=>t.startsWith(h,j)))j++;html+=`<span>${esc(t.slice(i,j))}</span>`;i=j;}
+    e.innerHTML=`<div class="ct" style="font-size:${z.sub}px;padding:0 12px;text-wrap:balance">${html}</div>`;HUD.push({el:e,t0:c.t[0],t1:c.t[1],kind:'cap'});all+=t;}
+  if(S.panel){const p=S.panel,e=box(L.panel,W,H,'pnl');e.style.fontSize=z.panel+'px';e.style.height='auto';e.innerHTML=`<div class="ph" style="font-size:${z.panelhead}px">${esc(p.head)}</div>`+p.rows.map(r=>`<div><span class="pk">${esc(r[0])}　</span>${esc(r[1])}</div>`).join('');HUD.push({el:e,t0:p.t[0],t1:p.t[1],kind:'panel'});all+=p.head+p.rows.flat().join('');}
+  for(const c of S.counter||[]){const e=box(L.counter,W,H,'ctr');e.innerHTML=`<div class="d" style="font-size:96px">${esc(c.big)}</div>`+(c.small?`<div class="s" style="font-size:40px">${esc(c.small)}</div>`:'');HUD.push({el:e,t0:c.t0,t1:c.t1,kind:'ctr'});all+=c.big+(c.small||'');}
+  for(const c of S.cards||[]){const e=box(L.card,W,H,'card');e.style.height='auto';e.innerHTML=`<div class="b" style="font-size:${c.size||92}px">${esc(c.big)}</div>`+(c.label?`<div class="l" style="font-size:40px">${esc(c.label)}</div>`:'');HUD.push({el:e,t0:c.t0,t1:c.t1,kind:'card'});all+=c.big+(c.label||'');}
+  if(S.chips){const e=box(L.chips,W,H,'chips');e.innerHTML=S.chips.items.map(c=>`<div class="chip" style="border-color:${c.color};font-size:30px"><span class="sq" style="background:${c.color}"></span><span class="tx">${esc(c.text)}</span><span class="st"></span></div>`).join('');HUD.push({el:e,t0:S.chips.show?Math.min(...S.chips.show.map(w=>w[0])):S.chips.t0,t1:S.chips.show?Math.max(...S.chips.show.map(w=>w[1])):S.chips.t1,kind:'chips'});all+=S.chips.items.map(c=>c.text+(c.state||'')).join('');}
+  if(S.style==='sanwei'){const y=S.chapters?7.9:3.6;let e=box([4,y,60,y+2.2],W,H,'wm');e.style.fontSize='34px';e.innerHTML='<i></i>'+(S.brand||'我的频道');HUD.push({el:e,t0:0,t1:1e9,kind:'credit'});e=box([60,62.6,96,64.4],W,H,'wm2');e.style.fontSize='24px';e.textContent='地图示意';HUD.push({el:e,t0:0,t1:1e9,kind:'credit'});all+=(S.brand||'我的频道')+'地图示意';}
+  if(S.credit){const e=box(L.credit,W,H,'crd');e.style.fontSize=z.credit+'px';e.textContent=S.credit;HUD.push({el:e,t0:0,t1:1e9,kind:'credit'});all+=S.credit;}
+  S.__alltext=all;}
+function fitCaps(){for(const h of HUD){if(h.kind!=='cap')continue;const d=h.el.querySelector('.ct');const fs0=parseFloat(d.style.fontSize);h.el.style.display='flex';d.style.whiteSpace='nowrap';const r=h.el.clientWidth/d.scrollWidth;if(r<1&&r>=0.88){d.style.fontSize=Math.floor(fs0*r)+'px';}else if(r<0.88){d.style.whiteSpace='normal';}h.el.style.display='none';}}
+function winVis(t,ws,F){let v=0;for(const w of ws){v=Math.max(v,Math.min(1,(t-w[0])*F/10,(w[1]-t)*F/10));}return Math.max(0,v);}
+function hud(t){const F=S.fps;let dimv=0;for(const h of HUD){const a=t-h.t0,b=h.t1-t;let op=0,tr='';
+  if(a>=0&&b>0){ if(h.kind==='cap'){const u=Math.min(1,a*F/6);op=u;tr=`translateY(${10*(1-easeOut(u))}px)`;}
+    else if(h.kind==='title'){const u=Math.min(1,a*F/12),o=Math.min(1,b*F/14);op=Math.min(u,o);tr=`scale(${o<1?1.04-0.02*o:0.92+0.08*easeOut(u)+0.02*Math.min(1,a/(h.t1-h.t0))})`;}
+    else if(h.kind==='panel'){const u=Math.min(1,a*F/14),o=Math.min(1,b*F/15);op=Math.min(u,o);tr=`translateX(${-48*(1-Math.min(easeOut(u),easeOut(o)))}px)`;}
+    else if(h.kind==='ctr'||h.kind==='card'){const u=Math.min(1,a*F/9),o=Math.min(1,b*F/9);op=Math.min(u,o);tr=`scale(${0.7+0.3*back(Math.min(1,a*F/12))})`;}
+    else if(h.kind==='chips'){const u=Math.min(1,a*F/10),o=Math.min(1,b*F/10);op=S.chips.show?winVis(t,S.chips.show,F):Math.min(u,o);const ch=h.el.children;S.chips.items.forEach((c,i)=>{const off=c.off!=null&&t>=c.off;ch[i].classList.toggle('off',off&&!c.keep);ch[i].querySelector('.st').textContent=off?(c.state||''):'';const pulse=c.off!=null?Math.max(0,1-Math.abs(t-c.off)*3):0;ch[i].style.transform=`scale(${1+0.18*pulse})`;});}
+    else op=1;}
+  if(h.kind==='card')dimv=Math.max(dimv,op);
+  h.el.style.opacity=op;h.el.style.transform=tr;h.el.style.display=op>0.001?'flex':'none';}
+  document.getElementById('dim').style.opacity=(dimv*(S.dim??0.35)).toFixed(3);}
+function satPending(){ // 低分辨率瓦片检测：视野内、接近当前缩放级别、尚未加载完成的影像/地形瓦片数
+  let n=0;const z=Math.floor(map.getZoom());const mgrs=[map.style.tileManagers&&map.style.tileManagers.sat, map.terrain&&map.terrain.tileManager, map.style.tileManagers&&map.style.tileManagers.demhs];
+  for(const m of mgrs){ if(!m||!m._inViewTiles) continue; for(const tl of m._inViewTiles.getAllTiles()){ if(tl.state!=='loaded'&&tl.state!=='errored'&&tl.tileID.overscaledZ>=Math.min(z-1,(m!==mgrs[0]?(S.dem_maxzoom||12):99)-0)) n++; } }
+  return n;}
+
+function cam(t){const K=S.keys;let i=0;while(i<K.length-2&&t>K[i+1][0])i++;const a=K[i],b=K[i+1];let u=E(t,a[0],b[0]);if(a[6]==='io')u=ease(u);
+  return {center:[lerp(a[1],b[1],u),lerp(a[2],b[2],u)],zoom:lerp(a[3],b[3],u),pitch:Math.min(85,lerp(a[4],b[4],u)),bearing:lerp(a[5],b[5],u)};}
+function grad(id,p,col){map.setPaintProperty(id,'line-gradient',p<=0?['step',['line-progress'],'rgba(0,0,0,0)',0,'rgba(0,0,0,0)']:(p>=1?['step',['line-progress'],col,1,col]:['step',['line-progress'],col,p,'rgba(0,0,0,0)']));}
+function slice(l,p){const L=l.cum[l.cum.length-1]*Math.min(1,p);const out=[l.coords[0]];for(let i=1;i<l.coords.length;i++){if(l.cum[i]<=L){out.push(l.coords[i]);continue;}const a=l.coords[i-1],b=l.coords[i],u=(L-l.cum[i-1])/((l.cum[i]-l.cum[i-1])||1);out.push([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u]);break;}if(out.length<2)out.push(out[0]);return out;}
+function rgba(c,a){if(c.startsWith('rgba')){return c.replace(/,\s*([\d.]+)\)$/,(m,x)=>`,${(+x)*a})`);}const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+
+function cam(t){const K=S.keys;let i=0;while(i<K.length-2&&t>K[i+1][0])i++;const a=K[i],b=K[i+1];let u=E(t,a[0],b[0]);if(a[6]==='io')u=ease(u);
+  return {center:[lerp(a[1],b[1],u),lerp(a[2],b[2],u)],zoom:lerp(a[3],b[3],u),pitch:Math.min(85,lerp(a[4],b[4],u)),bearing:lerp(a[5],b[5],u)};}
+function grad(id,p,col){map.setPaintProperty(id,'line-gradient',p<=0?['step',['line-progress'],'rgba(0,0,0,0)',0,'rgba(0,0,0,0)']:(p>=1?['step',['line-progress'],col,1,col]:['step',['line-progress'],col,p,'rgba(0,0,0,0)']));}
+function rgba(c,a){if(c.startsWith('rgba')){return c.replace(/,\s*([\d.]+)\)$/,(m,x)=>`,${(+x)*a})`);}const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+// ---------- v2 段落天气/调色层（模板固定预设；episode 只写 moods:[{t0,t1,preset,strength}]）----------
+const MOOD_CAP=0.5;   // v3：段落调色强度上限
+const MOOD={
+  neutral:{sat:0.0,con:0.15,bmin:0,bmax:1,tintA:0,vig:0,snow:0},   // v3：反差 0.08→0.15、不再加饱和
+  warm:{sat:0.0,con:0.18,bmin:0,bmax:1,tint:'#FFB066',tintA:0.10,vig:0.15,snow:0},   // v3：去掉褐色（tint 0.32→0.10、暗角 0.30→0.15）
+  cold:{sat:-0.35,con:0.10,bmin:0.06,bmax:0.95,tint:'#8DB8FF',tintA:0.45,vig:0.35,snow:0},
+  snow:{sat:-0.38,con:0.10,bmin:0.07,bmax:0.97,tint:'#A9C9FF',tintA:0.38,vig:0.42,snow:1.0},
+  dark:{sat:-0.40,con:0.14,bmin:0.02,bmax:0.84,tint:'#1E3358',tintA:0.42,vig:0.50,snow:0.35},
+  blood:{sat:-0.30,con:0.18,bmin:0,bmax:0.90,tint:'#C8102E',tintA:0.30,vig:0.50,snow:0.22},
+  gray:{sat:-0.55,con:0.08,bmin:0.03,bmax:0.90,tint:'#5E6372',tintA:0.28,vig:0.40,snow:0}};
+function moodAt(t){const N=MOOD.neutral,o={...N},X=0.45;let wsum=0;const acc={sat:0,con:0,bmin:0,bmax:0,vig:0,snow:0};
+  for(const m of (S.moods||[])){const P=MOOD[m.preset]||N,st=Math.min(MOOD_CAP,m.strength??1);const w=E(t,m.t0-X,m.t0+X)*(1-E(t,m.t1-X,m.t1+X));if(m.el)m.el.style.opacity=(w*st*(P.tintA||0)).toFixed(3);
+    if(w<=0)continue;const k=w*st;wsum+=k;for(const q in acc)acc[q]+=k*((P[q]??N[q])-N[q]);}
+  for(const q in acc)o[q]=N[q]+acc[q];return o;}
+const SWB={sat:-0.30,con:0.12,bmax:0.70};   // v4 sanwei 底图基调（叠加在 mood 之上）
+function applyMood(t){if(!S.moods||!S.moods.length)return;const o=moodAt(t),W=S.w,H=S.h;if(window.SW){o.sat+=SWB.sat;o.con+=SWB.con;o.bmax=Math.min(o.bmax,SWB.bmax);o.vig=Math.max(o.vig,0.28);}
+  map.setPaintProperty('sat','raster-saturation',Math.max(-1,Math.min(1,o.sat)));map.setPaintProperty('sat','raster-contrast',Math.max(-1,Math.min(1,o.con)));
+  map.setPaintProperty('sat','raster-brightness-min',Math.max(0,o.bmin));map.setPaintProperty('sat','raster-brightness-max',Math.min(1,o.bmax));
+  document.getElementById('vig').style.background=`radial-gradient(ellipse 70% 58% at 50% 46%,rgba(0,0,0,0) 45%,rgba(0,0,0,${Math.min(0.85,o.vig).toFixed(3)}) 100%)`;
+  const g=document.getElementById('fx').getContext('2d');g.clearRect(0,0,W,H);if(o.snow<=0.01)return;
+  const n=Math.round(FLAKES.length*Math.min(1,o.snow));g.fillStyle='#fff';
+  for(let i=0;i<n;i++){const f=FLAKES[i];const y=((f.y+f.sp*t)%(H+40))-20;const x=(((f.x+Math.sin(t*f.fq+f.ph)*f.amp-38*f.z*t)%W)+W)%W;
+    g.globalAlpha=f.a*Math.min(1,o.snow*1.3);g.beginPath();g.arc(x,y,f.sz,0,6.2832);g.fill();}
+  g.globalAlpha=1;}
+// ---------- v3 helpers ----------
+function exagAt(t){const X=(S.v3&&S.v3.exag)||[];if(!X.length)return S.terrain.exaggeration;let i=0;while(i<X.length-2&&t>X[i+1][0])i++;const a=X[i],b=X[i+1]||a;return lerp(a[1],b[1],E(t,a[0],b[0]||a[0]+1));}
+function kmToDeg(lat){return [1/(111.32*Math.cos(lat*Math.PI/180)),1/110.57];}
+function groundImage(g){const c=document.createElement('canvas'),x=c.getContext('2d');const fs=200,font=`900 ${fs}px "Noto Sans SC Variable","Noto Sans CJK SC",sans-serif`;x.font=font;
+  const sp=fs*0.18,w=Math.ceil(x.measureText(g.text).width+sp*(g.text.length-1))+fs*0.9,h=Math.ceil(fs*1.6);c.width=w;c.height=h;x.font=font;x.textBaseline='middle';
+  const draw=(fn)=>{let px=fs*0.45;for(const ch of g.text){fn(ch,px,h/2);px+=x.measureText(ch).width+sp;}};
+  if(window.SW){x.shadowColor='rgba(0,0,0,0.85)';x.shadowBlur=fs*0.22;x.shadowOffsetY=fs*0.06;x.fillStyle='rgba(0,0,0,0.6)';draw((ch,px,py)=>x.fillText(ch,px,py));x.shadowOffsetY=0;x.shadowBlur=0;x.fillStyle='#ffffff';draw((ch,px,py)=>x.fillText(ch,px,py));return {url:c.toDataURL('image/png'),aspect:h/w};}
+  x.shadowColor=g.glow;x.shadowBlur=fs*0.35;x.fillStyle=g.glow;draw((ch,px,py)=>x.fillText(ch,px,py));draw((ch,px,py)=>x.fillText(ch,px,py));
+  x.shadowBlur=0;x.lineJoin='round';x.lineWidth=fs*0.07;x.strokeStyle='rgba(0,0,0,0.55)';draw((ch,px,py)=>x.strokeText(ch,px,py));
+  x.fillStyle='#ffffff';draw((ch,px,py)=>x.fillText(ch,px,py));x.globalCompositeOperation='source-atop';x.fillStyle=g.color;x.globalAlpha=0.35;x.fillRect(0,0,w,h);
+  return {url:c.toDataURL('image/png'),aspect:h/w};}
+function groundQuad(g,asp){const [kx,ky]=kmToDeg(g.at[1]),W=g.width_km,H=W*asp,r=(g.rot||0)*Math.PI/180;
+  const ux=Math.sin(r),uy=Math.cos(r),rx=Math.cos(r),ry=-Math.sin(r);   // up = 朝 bearing 方向；right = bearing+90°
+  const P=(sx,sy)=>[g.at[0]+(rx*sx*W/2+ux*sy*H/2)*kx,g.at[1]+(ry*sx*W/2+uy*sy*H/2)*ky];
+  return [P(-1,1),P(1,1),P(1,-1),P(-1,-1)];}
+function wallBands(w){const R=w.ring,lat=R[0][1],[kx,ky]=kmToDeg(lat);let per=0;for(let i=1;i<R.length;i++)per+=Math.hypot((R[i][0]-R[i-1][0])/kx,(R[i][1]-R[i-1][1])/ky);
+  const wm=(w.width_m||Math.max(150,per*1000/500))/1000,fc={type:'FeatureCollection',features:[]};
+  for(let i=1;i<R.length;i++){const a=R[i-1],b=R[i],dx=(b[0]-a[0])/kx,dy=(b[1]-a[1])/ky,L=Math.hypot(dx,dy)||1,nx=-dy/L*wm*kx,ny=dx/L*wm*ky;
+    fc.features.push({type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[[a,b,[b[0]+nx,b[1]+ny],[a[0]+nx,a[1]+ny],a]]}});}
+  return {fc,h:w.height_m||Math.max(1500,per*8)};}
+function outerRings(geo){const out=[];const fs=geo.type==='FeatureCollection'?geo.features:[geo];for(const f of fs){const g=f.geometry||f;if(g.type==='Polygon')out.push(g.coordinates[0]);else if(g.type==='MultiPolygon')for(const p of g.coordinates)out.push(p[0]);}return out;}
+function spot(t){let vmax=0,ids=[];for(const a of S.areas){if(a.spot===false)continue;const v=E(t,a.t0,a.t0+0.8)*(1-E(t,a.t1-0.6,a.t1));if(v>0.001){vmax=Math.max(vmax,v);ids.push(a.id);}}
+  const key=ids.join(',');if(key!==S.__spotKey){S.__spotKey=key;let holes=[];for(const a of S.areas)if(ids.includes(a.id))holes=holes.concat(outerRings(a.__geo));
+    let x0=180,y0=90,x1=-180,y1=-90;for(const r of holes)for(const p of r){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+    const box=[[x0-30,Math.max(-80,y0-25)],[x1+30,Math.max(-80,y0-25)],[x1+30,Math.min(80,y1+25)],[x0-30,Math.min(80,y1+25)],[x0-30,Math.max(-80,y0-25)]];
+    map.getSource('spotmask').setData(holes.length?{type:'Feature',geometry:{type:'Polygon',coordinates:[box,...holes]}}:{type:'FeatureCollection',features:[]});}
+  // v3：圈定区域不在画面内时不压暗全屏
+  let vis=0;if(vmax>0){const W=S.w,H=S.h;for(const a of S.areas){if(!ids.includes(a.id))continue;for(const r of outerRings(a.__geo)){for(let i=0;i<r.length;i+=4){const q=map.project(r[i]);if(q.x>-40&&q.x<W+40&&q.y>H*0.1&&q.y<H*0.95){vis=1;break;}}if(vis)break;}if(vis)break;}}
+  map.setPaintProperty('spotmask','fill-opacity',0.35*vmax*vis);}
+function rectOf(el){const r=el.getBoundingClientRect();return [r.left,r.top,r.right,r.bottom];}
+const ovl=(a,b,m=6)=>!(a[2]+m<b[0]||b[2]+m<a[0]||a[3]+m<b[1]||b[3]+m<a[1]);
+const ZW=w=>['interpolate',['linear'],['zoom'],5,w*1.7,7,w*1.5,9,w*1.2,11,w];   // v3.1：远景线加粗
+function urect(el){const tr=el.style.transform;el.style.transform='none';const r=rectOf(el);el.style.transform=tr;return r;}
+function clampLabels(t){const W=S.w,H=S.h,M=18,YB=H*0.645;   // 标注框不出画、不压字幕区（按未缩放尺寸算，弹出过冲也不出画）
+  for(const p of S.pins){if(p.el.style.display==='none')continue;const b=p.el.querySelector('.box'),r=urect(b),ov=0.12*(r[2]-r[0]),MX=M+ov;let dx=0,dy=0;if(r[0]<MX)dx=MX-r[0];if(r[2]>W-MX)dx=W-MX-r[2];if(r[1]<H*0.16)dy=H*0.16-r[1];if(r[3]>YB)dy=YB-r[3];
+    if(dx||dy){b.style.left=(parseFloat(b.style.left)+dx)+'px';b.style.top=(parseFloat(b.style.top)+dy)+'px';}}
+  // v3：地名框给 HUD 卡片/标题让位：卡片出现前 0.6s 开始平滑移开，让不开就淡出
+  const ov=(r,q)=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1];
+  const hr=[];for(const h of HUD){if(h.kind==='credit'||h.kind==='cap'||h.t0==null)continue;const f=E(t,h.t0-0.6,h.t0)*(1-E(t,h.t1,h.t1+0.4));if(f<=0.001)continue;
+    const d0=h.el.style.display,v0=h.el.style.visibility;if(d0==='none'){h.el.style.display='flex';h.el.style.visibility='hidden';}const q=urect(h.el);h.el.style.display=d0;h.el.style.visibility=v0;hr.push([q,easeOut(f)]);}
+  for(const p of S.pins){if(p.el.style.display==='none')continue;const b=p.el.querySelector('.box');let r=urect(b);const hit=hr.find(([q])=>ov(r,q));if(!hit)continue;const [q,f]=hit;
+    const hgt=r[3]-r[1];let ny=null;if(q[3]+12+hgt<=YB)ny=q[3]+12;else if(q[1]-12-hgt>=H*0.16)ny=q[1]-12-hgt;
+    if(ny!==null){b.style.top=(parseFloat(b.style.top)+(ny-r[1])*f)+'px';r=urect(b);}
+    if(ny===null||(f>0.99&&hr.some(([q2])=>ov(r,q2))))p.el.style.opacity=parseFloat(p.el.style.opacity||1)*(1-f);}
+  for(const l of S.labels){if(l.el.style.display==='none')continue;const r=rectOf(l.el);let dx=0,dy=0;if(r[0]<M)dx=M-r[0];if(r[2]>W-M)dx=W-M-r[2];if(r[3]>YB)dy=YB-r[3];if(r[1]+dy<H*0.16)dy=H*0.16-r[1];if(dx||dy)l.el.style.transform=l.el.style.transform.replace(/translate\(([-\d.]+)px,\s*([-\d.]+)px/,(m,x,y)=>`translate(${parseFloat(x)+dx}px,${parseFloat(y)+dy}px`);}}
+function context(t,c){const CX=S.v3&&S.v3.context;if(!CX)return;const W=S.w,H=S.h;
+  const busy=[];for(const p of S.pins)if(p.el.style.display!=='none'){busy.push(rectOf(p.el.querySelector('.box')));const d=p.el.querySelector('.dot');busy.push(rectOf(d).map((v,i)=>v+(i<2?-30:30)));}
+  for(const l of S.labels)if(l.el.style.display!=='none')busy.push(rectOf(l.el));
+  for(const h of HUD)if(h.el.style.display!=='none'&&h.kind!=='credit')busy.push(rectOf(h.el));
+  const z=c.zoom,shown=[];
+  if(CX.__pool){let n=0;CX.cities.forEach((ci,i)=>{const e=CX.__pool[i];const zmin=ci.mz-1.6;const a=Math.min(1,(z-zmin)/0.5);
+    if(z<4.6||a<=0||n>=CX.max_cities){e.style.display='none';return;}const xy=map.project([ci.lon,ci.lat]);
+    if(xy.x<30||xy.x>W-30||xy.y<H*0.16||xy.y>H*0.62){e.style.display='none';return;}
+    e.style.display='block';e.style.transform=`translate(${xy.x-6}px,${xy.y-e.offsetHeight/2}px)`;const r=rectOf(e);
+    if(r[2]>W-12||busy.some(b=>ovl(r,b))||shown.some(b=>ovl(r,b,10))){e.style.display='none';return;}
+    e.style.opacity=(0.82*a).toFixed(3);shown.push(r);n++;});}
+  if(CX.__rv){const best={};if(z>=5&&z<=10.5)for(const r of CX.river_names){const xy=map.project(r.at);if(xy.x<60||xy.x>W-60||xy.y<H*0.18||xy.y>H*0.6)continue;const d=Math.hypot(xy.x-W/2,xy.y-H*0.4);if(!best[r.n]||d<best[r.n].d)best[r.n]={d,xy};}
+    for(const n in CX.__rv){const e=CX.__rv[n],b=best[n];if(!b){e.style.display='none';continue;}e.style.display='block';e.style.transform=`translate(${b.xy.x-e.offsetWidth/2}px,${b.xy.y-e.offsetHeight-8}px)`;const r=rectOf(e);
+      if(r[0]<10||r[2]>W-10||busy.some(q=>ovl(r,q))||shown.some(q=>ovl(r,q))){e.style.display='none';continue;}e.style.opacity='0.9';shown.push(r);}}}
+async function init(){
+  S=await fetch(new URLSearchParams(location.search).get('scene')).then(r=>r.json());
+  const W=S.w,H=S.h,k=S.scale||1;window.SW=S.style==='sanwei';if(SW)document.body.classList.add('sw');document.body.style.width=W+'px';document.body.style.height=H+'px';
+  for(const id of ['map','overlay','grade','vig','dim']){const e=document.getElementById(id);e.style.width=W+'px';e.style.height=H+'px';}
+  const fx=document.getElementById('fx');fx.width=W;fx.height=H;
+  for(const m of (S.moods||[])){const P=MOOD[m.preset]||MOOD.neutral;const d=document.createElement('div');d.style.background=P.tint||'transparent';if(P.blend)d.style.mixBlendMode=P.blend;document.getElementById('grade').appendChild(d);m.el=d;}
+  {let s=987654;const r=()=>(s=(s*16807)%2147483647)/2147483647;window.FLAKES=[];for(let i=0;i<1400;i++){const z=r();FLAKES.push({x:r()*W,y:r()*H,z,sp:(60+260*z*z),amp:6+22*r(),fq:0.4+1.2*r(),ph:r()*6.28,sz:1.1+4.4*z*z,a:0.35+0.6*z});}}
+  const st=document.getElementById('stars');st.width=W;st.height=H;
+  (function(){const c=st.getContext('2d');let s=12345;const r=()=>(s=(s*16807)%2147483647)/2147483647;c.fillStyle='#02040a';c.fillRect(0,0,W,H);for(let i=0;i<W*H/2300;i++){const a=r()*0.8+0.2;c.fillStyle=`rgba(255,255,255,${a*r()})`;const z=r()<0.06?2:1;c.fillRect(r()*W,r()*H,z,z);}})();
+  if(S.v3&&S.v3.ground&&S.v3.ground.length){await document.fonts.load('900 200px "Noto Sans SC Variable"',S.v3.ground.map(g=>g.text).join(''));}
+  const TP=new URLSearchParams(location.search).get('tiles'); if(TP){S.imagery=TP+'/esri/{z}/{y}/{x}'; S.dem=TP+'/dem/{z}/{x}/{y}.png';}
+  const sources={sat:{type:'raster',tiles:[S.imagery],tileSize:256,maxzoom:18},dem:{type:'raster-dem',tiles:[S.dem],tileSize:256,maxzoom:(S.dem_maxzoom||12),encoding:'terrarium'}};
+  const V3=window.V3=S.v3||{};
+  const layers=[{id:'sat',type:'raster',source:'sat',paint:(S.style==='sanwei')?{'raster-fade-duration':0,'raster-saturation':-0.30,'raster-contrast':0.27,'raster-brightness-max':0.70}:{'raster-fade-duration':0,'raster-saturation':0.0,'raster-contrast':0.15}}];
+  if(V3.hillshade){ // v3 山体阴影：独立 raster-dem 源（同一份 z12 瓦片缓存），只压暗阴坡、轻提阳坡
+    sources.demhs={type:'raster-dem',tiles:[S.dem],tileSize:256,maxzoom:(S.dem_maxzoom||12),encoding:'terrarium'};
+    layers.push({id:'hs',type:'hillshade',source:'demhs',paint:{'hillshade-exaggeration':0.32,'hillshade-shadow-color':'rgba(16,20,30,0.85)','hillshade-highlight-color':'rgba(255,255,255,0.22)','hillshade-accent-color':'rgba(20,24,34,0.5)','hillshade-illumination-direction':315,'hillshade-illumination-anchor':'map'}});}
+  const CX=V3.context;
+  if(CX&&CX.rivers){ sources.ctxriv={type:'geojson',data:CX.rivers};   // v3 常驻背景水系（今河道，青色细线）
+    layers.push({id:'ctxriv-glow',type:'line',source:'ctxriv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'rgba(47,224,230,0.55)','line-width':7,'line-blur':5,'line-opacity':0.45}},
+                {id:'ctxriv',type:'line',source:'ctxriv',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#8FF3FF','line-width':2.4,'line-opacity':0.8}});}
+  for(const g of V3.ground||[]){ const im=groundImage(g); sources[g.id]={type:'image',url:im.url,coordinates:groundQuad(g,im.aspect)};
+    layers.push({id:g.id,type:'raster',source:g.id,paint:{'raster-opacity':0,'raster-fade-duration':0,'raster-resampling':'linear'}});}
+  sources.spotmask={type:'geojson',data:{type:'FeatureCollection',features:[]}};
+  layers.push({id:'spotmask',type:'fill',source:'spotmask',paint:{'fill-color':'#05070b','fill-opacity':0,'fill-antialias':false}});
+  for(const a of S.areas){sources[a.id]={type:'geojson',data:typeof a.src==='string'?await fetch('/'+a.src).then(r=>r.json()):a.src};
+    layers.push({id:a.id+'-fill',type:'fill',source:a.id,paint:{'fill-color':a.color,'fill-opacity':0}},
+      {id:a.id+'-glow',type:'line',source:a.id,paint:{'line-color':a.glow,'line-width':18,'line-blur':10,'line-opacity':0}},
+      {id:a.id+'-line',type:'line',source:a.id,paint:{'line-color':a.core,'line-width':4,'line-opacity':0}});
+    a.__geo=sources[a.id].data;}
+  for(const w of V3.walls||[]){ const wd=wallBands(w); sources[w.id]={type:'geojson',data:wd.fc}; w.h=wd.h;
+    for(const j of [1,2,3]) layers.push({id:w.id+'-'+j,type:'fill-extrusion',source:w.id,paint:{'fill-extrusion-color':w.color,'fill-extrusion-height':w.h*j/3,'fill-extrusion-base':0,'fill-extrusion-opacity':0,'fill-extrusion-vertical-gradient':true}});}
+  for(const l of S.lines){sources[l.id]={type:'geojson',lineMetrics:true,data:{type:'Feature',geometry:{type:'LineString',coordinates:l.coords}}};
+    layers.push({id:l.id+'-glow',type:'line',source:l.id,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':ZW(l.width*(S.style==='sanwei'?3.6:2.2)),'line-blur':(S.style==='sanwei'?10:6),'line-gradient':['step',['line-progress'],'rgba(0,0,0,0)',0,'rgba(0,0,0,0)']}},
+      (l.dash?{id:l.id+'-line',type:'line',source:l.id,layout:{'line-cap':'butt','line-join':'round'},paint:{'line-width':ZW(l.width),'line-color':l.core,'line-opacity':0,'line-dasharray':[2.2,1.4]}}:{id:l.id+'-line',type:'line',source:l.id,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':ZW(l.width),'line-gradient':['step',['line-progress'],'rgba(0,0,0,0)',0,'rgba(0,0,0,0)']}}));
+    if(l.dash){layers[layers.length-2].paint={'line-width':l.width*2.2,'line-blur':6,'line-color':l.glow,'line-opacity':0};}
+    if(S.style==='sanwei'&&!l.dash)l.hi=true;
+    if(l.hi&&!l.dash) layers.push({id:l.id+'-hi',type:'line',source:l.id,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':ZW(Math.max(1.2,l.width*0.28)),'line-gradient':['step',['line-progress'],'rgba(0,0,0,0)',0,'rgba(0,0,0,0)']}});
+    l.cum=[0];for(let i=1;i<l.coords.length;i++){const a=l.coords[i-1],b=l.coords[i],k=Math.cos(b[1]*Math.PI/180);l.cum.push(l.cum[i-1]+Math.hypot((b[0]-a[0])*k,b[1]-a[1]));}}
+  const ov=document.getElementById('overlay');
+  const LS=window.LS=V3.label_scale||1, kk=k*LS;   // v3：地图标注放大（HUD 不变）
+  const TAG=c=>({'#C8102E':'#D9142B','#FF2A3D':'#D9142B','#2FE0E6':'#0A9DB6','#19E3FF':'#0A9DB6','#6CF07A':'#159A39','#39FF5A':'#159A39','#FFD84A':'#C99A00','#FFE14A':'#C99A00','#FFFFFF':'#2A2F38'}[String(c).toUpperCase()]||c);
+  for(const p of S.pins){const el=document.createElement('div');el.className='pin';const ds=Math.round(18*Math.sqrt(LS));
+    el.innerHTML=`<svg width="1" height="1"><line x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="3"/></svg><div class="dot" style="background:${p.color};width:${ds}px;height:${ds}px;left:${-ds/2}px;top:${-ds/2}px"></div><div class="box" style="${SW?`background:${TAG(p.color)};--gl:${p.color}66;`:''}border-color:${p.color};font-size:${34*kk}px;padding:${10*kk}px ${16*kk}px ${11*kk}px;border-width:3px">${p.text}${p.sub?`<span class="sub" style="font-size:${22*kk}px">${p.sub}</span>`:''}</div>`;
+    ov.appendChild(el);p.el=el;p.dx*=k*Math.sqrt(LS);p.dy*=k*Math.sqrt(LS);}
+  for(const l of S.labels){const el=document.createElement('div');el.className='lbl';el.style.fontSize=(l.size*kk)+'px';el.style.color=l.color;
+    if(l.box&&SW){el.style.background=TAG(l.color);el.style.border='none';el.style.padding='6px 16px 8px';el.style.borderRadius='4px';el.style.textShadow='0 1px 2px rgba(0,0,0,.45)';el.style.color='#fff';el.style.boxShadow='0 3px 10px rgba(0,0,0,.5)';el.style.letterSpacing='2px';}
+    else if(l.box){el.style.background='rgba(12,14,18,.62)';el.style.border='2.5px solid '+l.color;el.style.padding='6px 14px';el.style.borderRadius='6px';el.style.textShadow='none';el.style.color='#fff';}
+    el.textContent=l.text;ov.appendChild(el);l.el=el;}
+  for(const l of S.lines){if(!l.head)continue;const el=document.createElement('div');el.className='ahead';const s=Math.max(26,l.width*2.6);
+    el.innerHTML=`<svg width="${s*2}" height="${s*2}" style="position:absolute;left:${-s*1.25}px;top:${-s}px;overflow:visible;filter:drop-shadow(0 0 8px ${l.glow}) drop-shadow(0 2px 3px rgba(0,0,0,.6))"><path d="M${s*0.15},${s*0.25} L${s*1.55},${s} L${s*0.15},${s*1.75} L${s*0.5},${s}Z" fill="${l.core}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>`;ov.appendChild(el);l.hel=el;}
+  for(const l of S.lines){if(!l.tip||l.dash)continue;const e=document.createElement('div');e.className='tip';e.innerHTML=`<i style="filter:drop-shadow(0 0 10px ${l.glow}) drop-shadow(0 0 4px ${l.glow})"></i>`;ov.appendChild(e);l.tel=e;}
+  if(CX&&CX.cities){CX.__pool=CX.cities.map(c=>{const e=document.createElement('div');e.className='cty';e.style.fontSize=Math.round(25*k)+'px';e.innerHTML='<b></b>'+c.n;e.style.display='none';ov.appendChild(e);return e;});}
+  if(CX&&CX.river_names){CX.__rv={};for(const n of new Set(CX.river_names.map(r=>r.n))){const e=document.createElement('div');e.className='rvn';e.style.fontSize=Math.round(30*k)+'px';e.textContent=n;e.style.display='none';ov.appendChild(e);CX.__rv[n]=e;}}
+  for(const l of S.lines){if(!l.ends)continue;l.eel=[0,1].map(()=>{const e=document.createElement('div');e.className='ahead';e.innerHTML='<div class="dend"></div>';ov.appendChild(e);return e;});}
+  buildHud(W,H); S.__alltext+=S.pins.map(p=>p.text+(p.sub||'')).join('')+S.labels.map(l=>l.text).join('')+(CX?(CX.cities||[]).map(c=>c.n).join('')+(CX.river_names||[]).map(r=>r.n).join(''):''); await document.fonts.ready; await Promise.all(['500','700','900'].map(w=>document.fonts.load(`${w} 40px "Noto Sans SC Variable"`, S.__alltext||'乾'))); fitCaps();
+  const c0=cam(0);
+  map=new maplibregl.Map({container:'map',interactive:false,attributionControl:false,fadeDuration:0,pixelRatio:1,maxTileCacheSize:400,center:c0.center,zoom:c0.zoom,
+    canvasContextAttributes:{antialias:true,preserveDrawingBuffer:true},
+    style:{version:8,projection:{type:'globe'},sky:{'atmosphere-blend':['interpolate',['linear'],['zoom'],0,1,5,1,7,0],'sky-color':'#5f9bd3','horizon-color':'#c3d8ec','fog-color':'#b9c8d6','sky-horizon-blend':0.6,'horizon-fog-blend':0.3,'fog-ground-blend':0.3},sources,layers}});
+  await new Promise(r=>map.once('load',r));
+  {const t0=performance.now();while((V3.ground||[]).some(g=>!map.isSourceLoaded(g.id))&&performance.now()-t0<8000)await new Promise(r=>setTimeout(r,50));}
+  map.on('error',e=>{window.__errs=(window.__errs||0)+1;console.log('maperr',String(e&&e.error&&e.error.message||e).slice(0,120));});
+  window.READY=true;
+}
+function darkFrac(){const c=map.getCanvas(),w=192,h=Math.round(192*S.h/S.w);const cv=window.__dc||(window.__dc=document.createElement('canvas'));cv.width=w;cv.height=h;
+  const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(c,0,0,w,h);const d=g.getImageData(0,0,w,h).data;let n=0;for(let i=0;i<d.length;i+=4){if(d[i]+d[i+1]+d[i+2]<30)n++;}return n/(w*h);}
+function idle(timeout=45000){return new Promise(res=>{let done=false;const fin=ok=>{if(!done){done=true;res(ok)}};const check=()=>{if(map.loaded()&&map.areTilesLoaded()&&!map.isMoving())fin(true);};
+  map.once('idle',()=>fin(true));setTimeout(()=>fin(false),timeout);map.triggerRepaint();setTimeout(check,50);});}
+window.renderFrame=async function(t){
+  const c=cam(t);const wantT=c.zoom>=S.terrain.min_zoom;
+  const ex=exagAt(t);
+  if(wantT!==!!map.getTerrain())map.setTerrain(wantT?{source:'dem',exaggeration:ex}:null);
+  if(map.terrain&&Math.abs(map.terrain.exaggeration-ex)>1e-4){map.terrain.exaggeration=ex;}
+  map.jumpTo(c);
+  applyMood(t);
+  spot(t);
+  for(const w of (V3.walls||[])){const v=E(t,w.t0,w.t0+0.9)*(1-E(t,w.t1-0.6,w.t1)),gr=easeOut(E(t,w.t0,w.t0+1.2));for(const j of [1,2,3]){map.setPaintProperty(w.id+'-'+j,'fill-extrusion-opacity',0.5*v);map.setPaintProperty(w.id+'-'+j,'fill-extrusion-height',w.h*j/3*gr);}}
+  for(const g of (V3.ground||[])){const v=E(t,g.t0,g.t0+0.6)*(1-E(t,g.t1-0.5,g.t1));map.setPaintProperty(g.id,'raster-opacity',v);}
+  for(const a of S.areas){const v=E(t,a.t0,a.t0+0.8)*(1-E(t,a.t1-0.6,a.t1)),pz=a.pulse?(0.75+0.25*Math.cos(2*Math.PI*(t-a.t0)/1.3)):1;map.setPaintProperty(a.id+'-fill','fill-opacity',a.fill*v*pz);map.setPaintProperty(a.id+'-glow','line-opacity',0.9*v);map.setPaintProperty(a.id+'-line','line-opacity',v);}
+  for(const l of S.lines){const p=easeOut(E(t,l.draw[0],l.draw[1])),on=t>=l.t0;let f=1-E(t,l.t1-0.5,l.t1);if(l.dim)f*=1-0.7*E(t,l.dim,l.dim+0.6);
+    if(l.dash){const pp=on?p:0;if(l.__p!==pp){l.__p=pp;map.getSource(l.id).setData({type:'Feature',geometry:{type:'LineString',coordinates:slice(l,Math.max(pp,0.0005))}});}map.setPaintProperty(l.id+'-line','line-opacity',pp>0?f:0);map.setPaintProperty(l.id+'-glow','line-opacity',pp>0?0.8*f:0);}
+    else{grad(l.id+'-glow',on?p:0,rgba(l.glow,f));grad(l.id+'-line',on?p:0,rgba(l.core,f));if(l.hi)grad(l.id+'-hi',on?p:0,rgba(window.SW?'#FFFFFF':'#FFC9D1',0.9*f));}}
+  // 安静期判定 + 低分辨率瓦片检测：瓦片事件停 200ms、≥2 次重绘、且视野内近处瓦片全部加载；最长 SETTLE_MAX（默认 8s，重渲时 25s）
+  window.__errs=0; const st=performance.now(); let n=0, pend=0; window.__lastTile=performance.now(); const MAXW=window.SETTLE_MAX||8000;
+  if(!window.__hooked){ window.__hooked=1; map.on('dataloading',()=>{window.__lastTile=performance.now()}); map.on('data',()=>{window.__lastTile=performance.now()}); }
+  // 只在开始时重绘一次；之后被动等待（瓦片到达时 MapLibre 会自动重绘），避免 SwiftShader 下堆积多次无用重绘
+  await new Promise(r=>{map.once('render',r);map.triggerRepaint();}); n=1;
+  while(performance.now()-st<MAXW){ await new Promise(r=>setTimeout(r,40));
+    if(performance.now()-window.__lastTile>200 && !map.isMoving()){ pend=satPending(); if(pend===0) break; }
+    if(window.__errs>0){ window.__errs=0; try{for(const id of ['sat','dem'])map.style.tileManagers[id]?.reload(true);}catch(e){} } }
+  await new Promise(r=>{map.once('render',r);map.triggerRepaint();}); n++;
+  pend=satPending(); let ok=pend===0;
+  window.__last={t,ms:Math.round(performance.now()-st),n,pending:pend};
+  for(const p of S.pins){const a=E(t,p.t0,p.t0+0.45),out=1-E(t,p.t1-0.5,p.t1),vis=a*out;p.el.style.display=vis>0.001?'block':'none';if(vis<=0.001)continue;
+    const xy=map.project(p.at);p.el.style.transform=`translate(${xy.x}px,${xy.y}px)`;p.el.style.opacity=out;
+    const box=p.el.querySelector('.box'),line=p.el.querySelector('line'),dot=p.el.querySelector('.dot');dot.style.transform=`scale(${Math.min(1,a*2)})`;
+    const lp=easeOut(E(t,p.t0,p.t0+0.3));line.setAttribute('x2',p.dx*lp);line.setAttribute('y2',p.dy*lp);
+    const bw=box.offsetWidth,bh=box.offsetHeight;box.style.left=(p.dx>=0?p.dx:p.dx-bw)+'px';box.style.top=(p.dy<0?p.dy-bh:p.dy)+'px';
+    const bs=t>=p.t0+0.12?back(E(t,p.t0+0.12,p.t0+0.5)):0;box.style.transformOrigin=(p.dx>=0?'left ':'right ')+(p.dy<0?'bottom':'top');box.style.transform=`scale(${bs})`;}
+  for(const l of S.labels){const a=E(t,l.t0,l.t0+0.5)*(1-E(t,l.t1-0.5,l.t1));l.el.style.display=a>0.001?'block':'none';if(a<=0.001)continue;
+    const xy=map.project(l.at),w=l.el.offsetWidth,h=l.el.offsetHeight;l.el.style.transform=`translate(${xy.x-w/2}px,${xy.y-h/2}px) scale(${0.85+0.15*easeOut(a)})`;l.el.style.opacity=a;}
+  hud(t); clampLabels(t);
+  for(const l of S.lines){if(!l.tel)continue;const p=easeOut(E(t,l.draw[0],l.draw[1]));const g=Math.min(E(t,l.draw[0],l.draw[0]+0.15),1-E(t,l.draw[1],l.draw[1]+0.45));let f=1-E(t,l.t1-0.5,l.t1);
+    if(t<l.t0||g<=0.01||f<=0.01){l.tel.style.display='none';continue;}const tp=slice(l,Math.max(p,0.0005)).slice(-1)[0],xy=map.project(tp);l.tel.style.display='block';l.tel.style.opacity=g*f;l.tel.style.transform=`translate(${xy.x}px,${xy.y}px) scale(${0.9+0.15*Math.sin(t*9)})`;}
+  context(t,c);
+  for(const l of S.lines){if(!l.hel)continue;const p=easeOut(E(t,l.draw[0],l.draw[1])),on=t>=l.t0&&p>0.02;let f=1-E(t,l.t1-0.5,l.t1);if(l.dim)f*=1-0.7*E(t,l.dim,l.dim+0.6);
+    if(!on||f<=0.01){l.hel.style.display='none';continue;}const cs=slice(l,p),a=map.project(cs[Math.max(0,cs.length-2)]),b=map.project(cs[cs.length-1]);const ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI;
+    l.hel.style.display='block';l.hel.style.opacity=f;l.hel.style.transform=`translate(${b.x}px,${b.y}px) rotate(${ang}deg)`;}
+  for(const l of S.lines){if(!l.eel)continue;const p=easeOut(E(t,l.draw[0],l.draw[1])),on=t>=l.t0;let f=1-E(t,l.t1-0.5,l.t1);
+    const pts=[l.coords[0],slice(l,Math.max(p,0.0005)).slice(-1)[0]];l.eel.forEach((e,i)=>{if(!on||f<=0.01||(i===1&&p<0.05)){e.style.display='none';return;}const xy=map.project(pts[i]);e.style.display='block';e.style.opacity=f;e.style.transform=`translate(${xy.x}px,${xy.y}px)`;});}
+  hud(t);
+  return ok;
+};
+init();
+</script></body></html>

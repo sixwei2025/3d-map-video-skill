@@ -1,0 +1,27 @@
+{
+ "_note": "3D 地图模板曲库：只收 CC0 或明确可商用的曲目。每首记录来源页、原始文件、作者、授权、下载日期。episode 的 music.sections[].track 引用这里的 id；'@drone' 等以 @ 开头的为 engine/score.py 自合成。",
+ "war_theme": {
+  "file": "war_theme.ogg",
+  "title": "War Theme (ver 2)",
+  "author": "Spring Spring",
+  "license": "CC0 1.0",
+  "page": "https://opengameart.org/content/war-theme",
+  "orig": "https://opengameart.org/sites/default/files/war%20theme%20ver%202_0.ogg",
+  "downloaded": "2026-10-18",
+  "mood": "庄严/铺垫"
+ },
+ "determined_pursuit": {
+  "file": "determined_pursuit.ogg",
+  "title": "Determined Pursuit (epic orchestra loop)",
+  "author": "Emma_MA",
+  "license": "CC0 1.0",
+  "page": "https://opengameart.org/content/determined-pursuit-epic-orchestra-loop",
+  "orig": "https://opengameart.org/sites/default/files/determined_pursuit_loop.wav",
+  "downloaded": "2026-10-18",
+  "mood": "进行/出兵"
+ },
+ "_series_themes": {
+  "war": "war_theme.json → war_theme (War Theme ver 2, Spring Spring, CC0)",
+  "city": "city_theme.json → determined_pursuit (Emma_MA, CC0)"
+ }
+}

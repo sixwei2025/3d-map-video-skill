@@ -1,0 +1,31 @@
+{
+ "id": "demo_city", "aspect": "9x16", "fps": 30, "render_step": 1,
+ "style": "sanwei", "brand": "我的频道", "music_theme": "city",
+ "terrain_exaggeration": 1.5, "dem_maxzoom": 12,
+ "places": {
+  "C": {"lonlat": [121.42, 28.66], "name": "台州", "src": "示例坐标，自行核对"},
+  "M": {"lonlat": [121.06, 29.17], "name": "天台山", "src": "示例坐标，自行核对"}
+ },
+ "title": {"text": "台州的底气", "sub": "一张 3D 地图看懂", "t": [0.3, 3.0]},
+ "shots": [
+  {"type": "globe_dive", "target": "C", "dur": 5.0, "_line": "钩子句"},
+  {"type": "terrain_side", "center": "M", "zoom": 11.6, "pitch": 76, "bearing": 30, "slide_km": 4, "dur": 5.0, "_line": "从地图上看……"},
+  {"type": "fly_to", "to": "C", "zoom": 11.0, "pitch": 50, "bearing": 0, "dur": 3.0, "_line": "转折句"},
+  {"type": "hold_drift", "center": "C", "zoom": 11.4, "pitch": 48, "drift": 3, "dur": 4.0, "_line": "金句收尾（近景，不退远景）"}
+ ],
+ "annotations": [
+  {"type": "pin", "place": "M", "text": "天台山", "role": "city", "t": [5.6, 10.0]},
+  {"type": "pin", "place": "C", "text": "台州", "role": "main", "t": [13.4, 17.0]}
+ ],
+ "captions": [
+  {"t": [0.4, 4.8], "text": "第一句：一个看得见的怪现象", "hl": ["怪现象"]},
+  {"t": [5.2, 9.8], "text": "从地图上看 山把平原切碎了", "hl": ["山"]},
+  {"t": [10.2, 12.8], "text": "本来 没想到", "hl": []},
+  {"t": [13.2, 16.8], "text": "金句一行收尾", "hl": ["金句"]}
+ ],
+ "cards": [{"t0": 14.0, "t1": 16.9, "big": "底气", "size": 110, "label": "收尾大字卡"}],
+ "chapters": [{"title": "开场", "shot": 0}, {"title": "地理", "shot": 1}, {"title": "收尾", "shot": 3}],
+ "broll": [],
+ "cover": {"title": "台州的底气", "kicker": "城市系列", "sub": "山 × 海", "sub2": ["这个台", "你念对了吗"], "brand": "我的频道", "series": "城市系列 No.1", "bg": {"t": 6.0}},
+ "credit": "影像 © Esri 等（授权待核实）· 地形 AWS Terrain Tiles · 示意图 · 不含行政界线"
+}

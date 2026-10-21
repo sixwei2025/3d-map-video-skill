@@ -1,0 +1,4 @@
+- run_all.sh：一条命令全链（见 SKILL.md 第 5 步）
+- selfcheck.py：交付前硬指标自检
+- doctor.sh：环境检查
+- launch.py：可选的后台启动器（等价于 nohup + 日志），可不用

@@ -1,0 +1,12 @@
+{
+ "_note": "战争史系列统一配乐模板（2026-10-20：音乐是视频的灵魂；整片只用这一首真实配乐从头铺满，不用 score.py 自合成鼓点/whoosh/pop 当配乐）。强弱只靠这首曲子自身的音量包络。engine/mix_theme.py 读取。",
+ "series": "war",
+ "track": "war_theme", "file": "war_theme.ogg", "title": "War Theme (ver 2)", "author": "Spring Spring", "license": "CC0 1.0", "page": "https://opengameart.org/content/war-theme",
+ "style": "管弦史诗：弦乐+铜管+定音鼓/战鼓推进，283s 全长，2 分多钟不需循环",
+ "start_offset": 0.0, "loop": false,
+ "levels_db": {"under_voice": -13.0, "gap": -7.0, "head_tail": -7.0},
+ "phase_db": {"弱": -2.0, "中": 0.0, "强": 1.5, "收": -1.5},
+ "phase_from_old_track": {"@drone": "弱", "lost_bad_place": "弱", "war_theme": "中", "determined_pursuit": "中", "final_battle": "强", "bittersweet": "收", "emotional_piano": "收"},
+ "sfx": "none",
+ "voice_target_lufs": -16.0
+}
