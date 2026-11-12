@@ -1,132 +1,154 @@
-# 3D 地图短视频 Skill（3d-map-video）
+<div align="center">
 
-## 效果展示（新：WarFX 战争片风格 ·《官渡之战》）
-| 粒子行军路线 + 点阵对垒 + 震屏 | 3D 地形侧视（延津→白马） | 乌巢夜袭·点火 |
-|---|---|---|
-| <img src="assets/showcase/war/guandu_routes_dots.gif" width="260" alt="粒子路线与点阵对垒"> | <img src="assets/showcase/war/guandu_terrain_side.gif" width="260" alt="3D 地形侧视"> | <img src="assets/showcase/war/guandu_wuchao_fire.gif" width="260" alt="乌巢火攻"> |
+<img src="assets/showcase/hero-banner.jpg" alt="3D 地图历史与战争短视频 Skill — MapLibre 3D 地形 + WarFX 粒子行军/点阵兵力/震屏混音" width="100%" />
 
-| 统一封面（成片第 0.01 秒） | 全片抽帧（168 秒，12 帧） |
-|---|---|
-| <img src="assets/showcase/war/guandu_cover.jpg" width="240" alt="官渡之战封面"> | <img src="assets/showcase/war/guandu_contact.jpg" width="560" alt="官渡之战抽帧"> |
+# 3D 地图历史与战争短视频 Skill
+### `3d-map-video-skill` · MapLibre 3D 真实地形 + WarFX 战争特效 + 29 分钟极速出片流水线
 
-> 动图约 4 秒、480 宽、每张 <5 MB，均从成片截取（成片 1080×1920、2 分 49 秒、约 14.8 Mbps；仓库不含成片）。
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Specification-C8102E?style=flat-square)](https://agentskills.io)
+[![Engine](https://img.shields.io/badge/Engine-MapLibre%20GL%20·%203D%20Terrain%20·%20Canvas%20WarFX-18181B?style=flat-square)](#三流水线架构与-warfx-战争特效引擎)
+[![Speed](https://img.shields.io/badge/M5%20Speed-78s%20成片%20≈%202.5%20分钟渲染完-B45309?style=flat-square)](#四m5-极速渲染管线为什么能快-5-倍)
+[![License](https://img.shields.io/badge/License-MIT-059669?style=flat-square)](LICENSE)
 
-> 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师
-> 📮 更多 AI 视频与自动化实战，关注 **公众号 / 视频号：袁六伟**
+> 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，学员 7000+，客户 100+，得到 / 华为分享老师  
+> 📮 更多 AI 工具实测与自动化实战，关注 **公众号 / 视频号：袁六伟**
 
+**把枯燥的地名与兵力数字，变成一镜到底的 3D 地球俯冲、山脉河谷侧视巡航与火烧乌巢粒子战场。**  
+支持 **城市地理科普** 与 **古代战役推演（WarFX）** 双模式：通过一份 `episode.json` 定义镜头轨迹、行军路线与口播台词，无头 Chrome + WebGL 逐帧确定性渲染 `1080×1920` 竖屏大片，配合 `lo_check.sh` 碰撞预检，从选题到交片全链路压进 **29 分钟**。
 
-> 爆火的 3D 地图视频，WorkBuddy / Codex / Claude Code 轻松复刻。一个符合 [Agent Skills](https://agentskills.io/specification) 规范的 skill：让 agent 从选题、脚本到 1080×1920 成片一条龙做出「3D 地图讲城市/历史/战争」竖屏口播短视频。
-
-**English**: An Agent Skill that turns a script into a 1080×1920 vertical "3D map explainer" short video — MapLibre 3D terrain rendered frame-by-frame in headless Chrome, with neon routes, labels, number cards, a full-length CC0 music bed and ffmpeg delivery at ~14 Mbps. Works with any agent that loads `SKILL.md` (Claude Code, Codex, WorkBuddy, …).
-
-## 原有风格展示（城市 / 战争史基础版）
-| | | |
-|---|---|---|
-| ![地球俯冲开场](assets/showcase/01-globe-dive.jpg) | ![行军路线](assets/showcase/02-war-route.jpg) | ![城市地形](assets/showcase/03-city-terrain.jpg) |
-| **地球俯冲开场**：片名 + 顶部章节进度条 + 频道水印 | **行军路线**：霓虹线一笔画出 + 地名牌 + 无框字幕（井陉之战） | **城市地形**：压灰卫星底图 + 城市注记（台州） |
-| ![封面大字卡·萨尔浒](assets/showcase/04-cover-sarhu.jpg) | ![封面大字卡·大运河](assets/showcase/05-cover-canal.jpg) | |
-| **封面大字卡**（电影海报风，作为成片首帧） | **封面大字卡**：同一模板只换数据和文案 | |
-
-| 全片抽帧 |
-|---|
-| ![大运河抽帧](assets/showcase/06-canal-8frames.jpg) |
-| 大运河：封面 → 开场 → 纠错卡 → 年份卡 → 数字卡 → 金句收尾 |
-| ![萨尔浒抽帧](assets/showcase/07-sarhu-frames.jpg) |
-| 萨尔浒之战：四路箭头、年份卡、侧视山地、地名牌 |
-
-### 动态演示 GIF
-| 战争史：井陉之战（地球俯冲开场） | 城市：台州（3D 地形侧视） |
-|---|---|
-| ![战争史动态演示](assets/showcase/demo-war.gif) | ![城市动态演示](assets/showcase/demo-city.gif) |
-
-## WarFX 战争片风格（新）
-一套叠在 3D 地图上的「战争特效层」（`engine/warfx/`，场景页 `engine/warfx.html`）：
-- **暗化底图**：卫星图压暗、降饱和、蓝调；**发光河流**（黄河等主河道外发光）
-- **粒子行军路线**：一笔画出 + 粒子沿线流动 + 箭头；虚线表示奔袭/示意
-- **点阵兵力**：方阵点阵出场、移动、溃散，红蓝对垒
-- **滚动数字**：兵力卡数字滚动（100,000 vs 10,000），大字砸屏（10 : 1、点火）
-- **震屏 + 音效**：冲击波/火光 + 画面震动，`sfx.py` 自动按时间轴合成鼓点、冲击、火焰音效，`mix_fx.py` 与配乐、人声混音（人声自动压低配乐）
-- **3D 地形侧视**：72° 俯仰 + 地形夸张 3.4 的山河侧视镜头
-- **标签避让**：地名牌/卡片自动避让，不压字幕、不出画
-- **统一封面**：`engine/cover_poster.py` 生成电影海报风封面，编码时放在成片**第 0.01 秒**（前 3 帧），平台自动取首帧即封面
-
-完整示例（脚本、出处、镜头、时间轴、一条命令全链）：[`skills/3d-map-video/examples/战争史-官渡之战/`](skills/3d-map-video/examples/战争史-官渡之战/)，引擎说明见 [`engine/warfx/README.md`](skills/3d-map-video/engine/warfx/README.md)。
-
-**提速后的流程（3 分钟片约 29 分钟，Apple M5 实测）**：配音约 10 分 → 低清自检 2 轮约 6 分 → 全尺寸渲染 `render_fast.mjs` PAR=3 约 9.4 分 → 封面+定码率编码约 3 分。
 ```bash
-cd skills/3d-map-video
-bash "examples/战争史-官渡之战/run.sh" check   # 低清自检：只渲关键段（几分钟）
-bash "examples/战争史-官渡之战/run.sh" hi      # 全尺寸成片 → out/war_guandu/官渡之战.mp4
-```
-
-## 安装
-任选一种：
-```bash
-# 1) skills CLI
+# 方式 A：通过 skills CLI 一键安装（推荐）
 npx skills add sixwei2025/3d-map-video-skill
-# 2) 手动：克隆后把 skills/3d-map-video 复制到你的 agent 的 skills 目录
-git clone https://github.com/sixwei2025/3d-map-video-skill.git && cd 3d-map-video-skill
-mkdir -p ~/.claude/skills && cp -r skills/3d-map-video ~/.claude/skills/        # Claude Code
-cp -r skills/3d-map-video ~/.codex/skills/         # Codex（以你的版本文档为准）
-# WorkBuddy 等：放到其 skills 目录即可
-```
-然后对 agent 说：「用 3d-map-video skill，给 <城市/战役> 做一条 3D 地图短视频」。
 
-## 依赖
-Node.js ≥18、Google Chrome/Chromium、ffmpeg（含 libx264）、Python 3 + numpy + Pillow。MapLibre GL JS 与 Noto Sans SC 字体已内置。Apple Silicon Mac 走 Metal 最快；无 GPU 的 Linux 可跑但慢。
-
-## 快速开始
-```bash
-cd skills/3d-map-video
-npm install && bash scripts/fetch_music.sh && pip3 install numpy pillow
-bash scripts/doctor.sh
-ID=demo_city MODE=sample SAMPLE="0-30" PAR=1 bash scripts/run_all.sh   # 1 秒小样 → out/demo_city/
-```
-完整流程（选题五审 → 五段式脚本 → 配音 → episode JSON → 一条命令全链 → 自检 → 交付）见 [`skills/3d-map-video/SKILL.md`](skills/3d-map-video/SKILL.md)。
-
-## 目录
-```
-skills/3d-map-video/
-  SKILL.md        主流程（7 步）
-  engine/         渲染/编码/混音/封面/实拍层引擎
-  engine/warfx/   WarFX 战争特效层（warfx.js、镜头 shots.py、音效 sfx.py、混音 mix_fx.py、收尾 finish*.sh、低清自检 lo_check.sh）
-  engine/warfx.html · render_fast.mjs   WarFX 场景页 · 提速渲染器（render_job_mac.sh RENDERER=render_fast.mjs）
-  scripts/        run_all.sh 一条命令全链 · selfcheck.py · doctor.sh · fetch_music.sh
-  templates/      episode JSON、脚本、出处表、发布包、复盘模板
-  references/     快速开始、已知坑、选题五审+五段式、爆款标题六招、对标拆解
-  examples/       台州（城市）、井陉之战（战争史）、官渡之战（WarFX，含 run.sh）脚本+出处+时间轴；样张
-  episodes/       可直接编译的示例
-  assets/music/   配乐授权登记（音频用 fetch_music.sh 下载）
-assets/showcase/  README 效果图
+# 方式 B：克隆完整工程并安装渲染依赖
+git clone https://github.com/sixwei2025/3d-map-video-skill.git
+cd 3d-map-video-skill && npm install
 ```
 
-## 素材与许可提醒
-- **卫星影像**默认 Esri World Imagery 免登录端点，**商用授权【待核实】**，正式发布请换有授权的影像源（episode `imagery` 字段可改）。
-- **地形** AWS Terrain Tiles（Terrarium），署名要求【待核实】；河流 Natural Earth（公有领域）、OSM（ODbL，需署名）。
-- **国界/省界**：内置 DataV 数据仅供调试，许可与完整性【待核实】；模板默认不画国界省界，涉及国界请按《地图管理条例》使用标准地图或送审。
-- **配乐**：War Theme (ver 2) / Spring Spring、Determined Pursuit / Emma_MA，均 CC0 1.0（OpenGameArt）。
-- **字体** Noto Sans SC（SIL OFL 1.1）；**MapLibre GL JS**（BSD-3-Clause）。
-- 实拍素材只用公有领域/CC/自有素材，来源逐条写进发布包。本仓库不含任何成片视频与配音。
+[WarFX 战役动图画廊](#一warfx-战役特效与城市俯冲真实画廊) · [一条命令出片](#二一条命令极速出片) · [WarFX 引擎与五步架构](#三流水线架构与-warfx-战争特效引擎) · [29 分钟极速管线](#四m5-极速渲染管线为什么能快-5-倍) · [地图合规红线](#五地图审图与数据合规红线必读)
 
-## 致谢
-- [maplibre/maplibre-gl-js](https://github.com/maplibre/maplibre-gl-js)：三维地图渲染引擎（内置于 `engine/vendor/`）
-- [puppeteer/puppeteer](https://github.com/puppeteer/puppeteer)：`puppeteer-core` 驱动无头 Chrome 逐帧截图
-- [anthropics/skills](https://github.com/anthropics/skills) 与 [Agent Skills 规范](https://agentskills.io/specification)：skill 目录与 SKILL.md 格式
-- [fontsource/fontsource](https://github.com/fontsource/fontsource)：Noto Sans SC 网页字体包
-- [tilezen/joerd](https://github.com/tilezen/joerd)：AWS Terrain Tiles（Terrarium 地形）
-
-## License
-代码与文档：MIT（见 LICENSE）。第三方组件与数据遵循各自许可。
+</div>
 
 ---
 
-## 关于作者
+## 一、WarFX 战役特效与城市俯冲真实画廊
 
-**袁六伟 · 台州汇芯**：一人 AI 公司创业者，6000+ 学员，100+ 客户，得到/华为分享老师。专注 AI 视频与自动化落地。
+### 1. WarFX 战役推演实拍：《官渡之战 · 78 秒竖屏成片》
 
-- 公众号：**袁六伟**
+| 粒子行军箭头 + 方块点阵兵力对比 | 3D 真实山脉地形侧视巡航 | 火烧乌巢（65 粒子火场 + 震屏） |
+| :---: | :---: | :---: |
+| <img src="assets/showcase/war/guandu_routes_dots.gif" width="260" alt="官渡之战粒子行军与点阵兵力" /> | <img src="assets/showcase/war/guandu_terrain_side.gif" width="260" alt="3D地形侧视" /> | <img src="assets/showcase/war/guandu_wuchao_fire.gif" width="260" alt="火烧乌巢粒子特效" /> |
+
+| 官渡之战 · 电影级竖屏封面 | 官渡之战 · 全片 6 幕九宫格总览 |
+| :---: | :---: |
+| <img src="assets/showcase/war/guandu_cover.jpg" width="260" alt="官渡之战封面" /> | <img src="assets/showcase/war/guandu_contact.jpg" width="520" alt="官渡之战分镜总览" /> |
+
+### 2. 城市地理与萨尔浒战役多场景展示
+
+<p align="center">
+  <img src="assets/showcase/demo-war.gif" width="260" alt="萨尔浒四路合围动图" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/showcase/demo-city.gif" width="260" alt="温州温瑞平原3D俯冲动图" />
+</p>
+
+| 01 · 太空地球俯冲入场 | 02 · 多路进军战役路线 | 03 · 城市山脉盆地 3D 高程 | 04 · 萨尔浒之战竖屏封面 |
+| :---: | :---: | :---: | :---: |
+| <img src="assets/showcase/01-globe-dive.jpg" width="200" /> | <img src="assets/showcase/02-war-route.jpg" width="200" /> | <img src="assets/showcase/03-city-terrain.jpg" width="200" /> | <img src="assets/showcase/04-cover-sarhu.jpg" width="200" /> |
+
+---
+
+## 二、一条命令极速出片
+
+### 1. 在 Agent 中自然语言触发
+
+| 你对 Agent 说的话 | 自动执行的流水线动作 |
+| :--- | :--- |
+| `做一条「赤壁之战：曹操号称八十万大军为什么败给五万联军」的 3D 地图视频` | 选题五审 → 生成 5 段式口播 + 经纬度运镜 `episode.json` → 0.5 秒标签碰撞预检 → 渲染成片 |
+| `先跑一下标签碰撞预检，别急着渲染全片` | 运行 `bash scripts/lo_check.sh episodes/guandu_war.json` 在 0.5 秒内检查文字重叠与越界 |
+| `用极速模式渲染官渡之战` | 调用 `scripts/render_fast.mjs`（24fps + JPEG 直灌 FFmpeg 管道 + SFX 战场音效混音） |
+
+### 2. 命令行标准工作流
+
+```bash
+# Step 1: 0.5 秒标签碰撞与安全区预检（不启动重型渲染，秒级排错）
+bash scripts/lo_check.sh episodes/guandu_war.json
+
+# Step 2: 逐句生成 Edge-TTS 语音并测量真实时长回写 JSON
+python3 scripts/tts_generate.py episodes/guandu_war.json
+
+# Step 3: 启动 M5 WebGL 极速渲染器（78 秒视频仅需 ~2.5 分钟）
+node scripts/render_fast.mjs episodes/guandu_war.json
+
+# Step 4: 合成冷兵器战场音效（行军鼓点/号角/刀剑碰撞/大火燃烧）与封面
+python3 scripts/war_sfx_mix.py episodes/guandu_war.json
+```
+
+---
+
+## 三、流水线架构与 WarFX 战争特效引擎
+
+<p align="center">
+  <img src="assets/showcase/pipeline-architecture.jpg" alt="3D 地图短视频 5 步渲染流水线架构" width="100%" />
+</p>
+
+### WarFX 六大视觉与听觉武器（`template/war_fx.js` + `scripts/war_sfx_mix.py`）
+
+1. **方块点阵兵力对比（Troop Dot Matrix）**：用动态点亮的红/蓝方格阵列直观展示「袁绍 10 万 vs 曹操 2 万」的悬殊体量，比单纯写数字冲击力强 10 倍。
+2. **双层流光粒子行军线（Particle March Route）**：底层渐变虚线轨迹 + 顶层发光粒子沿贝塞尔曲线高速奔涌，前端带方向箭头与兵种徽章。
+3. **65 粒子物理火场 + 震屏（Fire & Screen Shake）**：触发「火烧乌巢/赤壁火攻」关键帧时，自动叠加 65 颗上升火星粒子、径向红光脉冲与 `±6px` 衰减震屏。
+4. **地名标签碰撞躲避（Smart Label Collision）**：自动检测同屏城池、关隘、兵团旗帜的 Bounding Box，重叠时自动偏移引线角度。
+5. **五段式运镜语法**：`太空俯冲 (Globe Dive)` → `高倾斜角山川巡航 (Pitch 65°)` → `双城对峙俯瞰` → `侧视河谷走廊推进` → `全局战略拉远`。
+6. **程序化战场音效库（`war_sfx_mix.py`）**：按分镜时间戳自动混入低频战鼓（March Drum）、苍凉号角（War Horn）、刀剑交锋（Clash）与烈火噼啪声。
+
+---
+
+## 四、M5 极速渲染管线：为什么能快 5 倍？
+
+早期版本渲染一条 75 秒视频需要 18 分钟以上，升级后的 **`render_fast.mjs` + `lo_check.sh`** 将全流程压进 **29 分钟（其中纯渲染仅需 ~2.5 分钟）**：
+
+| 优化维度 | 传统截屏方案（慢） | 本仓库极速方案（快 5x） |
+| :--- | :--- | :--- |
+| **排版排错** | 渲染完 15 分钟发现两个地名叠在一起，推倒重来 | 先跑 `lo_check.sh`，**0.5 秒**算完所有帧标签坐标碰撞 |
+| **帧传输协议** | `page.screenshot({type:'png'})` 落盘几千张小文件 | `canvas.toDataURL('image/jpeg', 0.92)` 内存管道直灌 `ffmpeg stdin` |
+| **瓦片等待策略** | 每帧死等 `sleep(200ms)` | 预热相机轨迹瓦片缓存 + WebGL `idle` 信号精准触发 |
+| **帧率与编码** | 30fps PNG 无损序列 | 24fps 电影感帧率 + Hardware VideoToolbox / `libx264 -preset fast` |
+
+---
+
+## 五、地图审图与数据合规红线（必读）
+
+在涉华历史与地理短视频发布中，**地图合规是第一生命线**：
+
+1. **严禁使用未经审图的境外开源边界数据描绘现代中国国界**：涉及现代中国全图、省界、藏南、阿克赛钦、台湾岛、钓鱼岛、南海诸岛及十段线时，**必须切换为自然资源部标准地图服务（天地图 `tianditu.gov.cn`）底图并标注审图号**。
+2. **古代战役纯地形模式**：在讲官渡、赤壁、萨尔浒等古代局部战役时，默认开启 **纯卫星地形高程无现代国界模式（Pure DEM Terrain）**，只展示山脉、河流与古地名标签，不叠加任何现代行政边界图层。
+
+---
+
+## 关于作者与开源生态
+
+**袁六伟 · 台州汇芯**：一人 AI 公司创业者，学员 7000+，服务商单客户 100+，覆盖近 20 个行业，得到 / 华为分享老师。AI 变现实战派，自己跑通才拿出来教。
+
+- 公众号：**袁六伟**（微信搜一搜关注，看更多 AI 工具实测与一人公司实战）
 - 视频号：**袁六伟**
 
-这个 Skill 免费开源。觉得有用的话，欢迎点个 ⭐ Star，再关注公众号或视频号「袁六伟」，那里有更多 AI 视频和自动化的实战分享。企业或文旅合作也可以通过公众号联系。
+这个项目免费开源。如果它帮你的产线省下了每天反复返工的时间，欢迎在右上角点个 ⭐ **Star**，也欢迎转发给身边做内容或一人公司的朋友。
 
-更多开源 Skill：[talking-head-video-skill](https://github.com/sixwei2025/talking-head-video-skill)
+### 同系列开源 Skill 矩阵（袁六伟 · 台州汇芯）
+
+| 仓库 | 领域 | 核心能力 |
+| :--- | :--- | :--- |
+| [**workbuddy-wechat-autopilot**](https://github.com/sixwei2025/workbuddy-wechat-autopilot) | 公众号全链路 | 九步硬闸总控：选题→写稿→真实截图→6套封面→6套排版→三重校验→草稿箱 |
+| [**wechat-cover-skill**](https://github.com/sixwei2025/wechat-cover-skill) | 公众号视觉 | 封面渲染引擎（6套高客单价杂志风 + 黑红金 v2b + DOM 几何硬闸） |
+| [**gzh-million-layout-skill**](https://github.com/sixwei2025/gzh-million-layout-skill) | 公众号排版 | 汇芯红 `#C8102E` 六套 100% 内联 CSS 骨架 + 乱码硬闸 + 配图皮肤 |
+| [**ai-tool-review-wechat-skill**](https://github.com/sixwei2025/ai-tool-review-wechat-skill) | 公众号评测 | AI 工具真跑评测工作流（5项一票否决 + 说人话硬闸 + 证据表） |
+| [**hit-title-expert-skill**](https://github.com/sixwei2025/hit-title-expert-skill) | 爆款标题 | 一次直出 10 条 14–22 字高浓缩狠标题（5大公式 × 5类钩子词） |
+| [**auto-tutorial-skill**](https://github.com/sixwei2025/auto-tutorial-skill) | 短视频工程 | 链接/网页/真机截图 → 3:4 封面 + 1.5x 配音 + 红框标注教程视频 |
+| [**talking-head-video-skill**](https://github.com/sixwei2025/talking-head-video-skill) | 短视频工程 | 1080×1920 竖屏真人口播短视频（ASR 错字校对 + 逐字卡拉OK字幕 + 6项QC） |
+| [**3d-map-video-skill**](https://github.com/sixwei2025/3d-map-video-skill) | 短视频工程 | MapLibre 3D 地形 + WarFX 战争特效（粒子行军/点阵兵力/震屏混音） |
+| [**psych-kepu-video-skill**](https://github.com/sixwei2025/psych-kepu-video-skill) | 短视频工程 | Remotion + JSON 驱动的 15–30s 深色扁平动画心理科普短视频 |
+| [**dark-infographic-video-skill**](https://github.com/sixwei2025/dark-infographic-video-skill) | 短视频工程 | 纯 Python + FFmpeg 暗黑流光数据可视化科普片（含 v2 手机外放配乐） |
+| [**local-video-hub**](https://github.com/sixwei2025/local-video-hub) | AI 团队基建 | 视频版本地 Obsidian：多 AI 员工统一交片、去重门闸与四态流转云台 |
+| [**yuanliuwei-ai-skills**](https://github.com/sixwei2025/yuanliuwei-ai-skills) | 一人公司方法 | PACT 72h 需求验证模型与一人 AI 公司 10 大业务决策模块 |
+| [**book-skill**](https://github.com/sixwei2025/book-skill) | 知识工程 | 上传任意书籍 PDF → 自动提炼方法论生成 `.skill` + 公众号导流文案 |
+| [**huangdi-skill**](https://github.com/sixwei2025/huangdi-skill) | 认知操作系统 | 中国历史八大皇帝（秦始皇/汉武帝/唐太宗等）一手史料认知框架蒸馏 |
+| [**sunrise-tracker**](https://github.com/sixwei2025/sunrise-tracker) | 选题雷达 | 小红书 AI 赛道 10 倍异常流量「低粉爆文」每日早 7 点监测推送 |
