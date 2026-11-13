@@ -29,6 +29,13 @@ cd 3d-map-video-skill && npm install
 
 </div>
 
+## 版本记录
+
+当前版本：`v1.0.0` · 2026-11-13
+完整变化记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+
+
 ## 新手安装：把链接发给 AI
 
 打开 Codex、WorkBuddy，或其他支持技能安装的 AI 智能体，把下面这段话直接发到对话框，让它帮你安装：

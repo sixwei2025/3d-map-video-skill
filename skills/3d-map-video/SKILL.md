@@ -1,6 +1,7 @@
 ---
 name: 3d-map-video
 description: 用 MapLibre 三维地形 + 无头 Chrome 逐帧渲染 + ffmpeg，制作 1080×1920 竖屏「3D 地图讲城市/历史/战争」口播短视频：选题五审、五段式脚本、episode JSON、一条命令全链出片、自检与交付。Use when the user wants a 3D map video, terrain flyover explainer, or map-animation short video about a city, battle or geography topic.
+version: 1.0.0
 author: 袁六伟 · 台州汇芯（公众号/视频号：袁六伟）
 ---
 
