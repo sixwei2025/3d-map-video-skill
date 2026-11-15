@@ -9,10 +9,19 @@ let want;if(!spec)want=[...Array(meta.frames).keys()];else if(spec.includes('-')
 const fp=f=>`${out}/f${String(f).padStart(5,'0')}.jpg`;const todo=process.env.FORCE?want:want.filter(f=>!fs.existsSync(fp(f)));const logf=`${work}/frames.log.jsonl`;
 console.log('todo',todo.length,'of',want.length,'size',meta.w+'x'+meta.h,'page',PAGE,'fast');
 const pend=new Set();const wr=(f,buf)=>{const p=fs.promises.writeFile(fp(f)+'.tmp.jpg',buf).then(()=>fs.promises.rename(fp(f)+'.tmp.jpg',fp(f)));pend.add(p);p.finally(()=>pend.delete(p));};
+function findChrome(){ if(process.env.CHROME) return process.env.CHROME;
+  const pf=process.env.ProgramFiles||'C:\\Program Files', pf86=process.env['ProgramFiles(x86)']||'C:\\Program Files (x86)', lad=process.env.LOCALAPPDATA||'';
+  for(const p of ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/google-chrome','/usr/bin/chromium',
+    path.join(pf,'Google','Chrome','Application','chrome.exe'),path.join(pf86,'Google','Chrome','Application','chrome.exe'),
+    lad?path.join(lad,'Google','Chrome','Application','chrome.exe'):'',path.join(pf,'Microsoft','Edge','Application','msedge.exe')].filter(Boolean))
+    if(fs.existsSync(p)) return p;
+  throw new Error('找不到 Chrome：请设置 CHROME 环境变量'); }
+const exe=findChrome();
+const gpuArgs=process.platform==='darwin'?['--use-angle=metal','--enable-gpu-rasterization','--ignore-gpu-blocklist','--enable-webgl','--enable-zero-copy']:['--ignore-gpu-blocklist','--enable-webgl'];
 async function pass(list,settleMax,tag){const flagged=[];let done=0,tR=0,tS=0;const t0=Date.now();
   for(let i=0;i<list.length;i+=C){const prof=path.resolve(`tmp/prof-${process.pid}-${i}`);fs.mkdirSync(prof,{recursive:true});
-    const browser=await puppeteer.launch({executablePath:process.env.CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,protocolTimeout:900000,timeout:180000,userDataDir:prof,
-      args:['--use-angle=metal','--enable-gpu-rasterization','--ignore-gpu-blocklist','--enable-webgl','--enable-zero-copy','--no-first-run','--no-default-browser-check','--use-mock-keychain','--password-store=basic',
+    const browser=await puppeteer.launch({executablePath:exe,headless:true,protocolTimeout:900000,timeout:180000,userDataDir:prof,
+      args:[...gpuArgs,'--no-first-run','--no-default-browser-check','--use-mock-keychain','--password-store=basic',
         '--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows',`--window-size=${meta.w},${meta.h}`,'--disk-cache-size=300000000','--js-flags=--max-old-space-size=2048']});
     try{const page=await browser.newPage();await page.setViewport({width:meta.w,height:meta.h,deviceScaleFactor:1});
       page.on('pageerror',e=>console.log('[pageerror]',e.message));page.on('console',m=>{const x=m.text();if(x.startsWith('maperr'))console.log(x);});

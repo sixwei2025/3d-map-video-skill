@@ -7,8 +7,15 @@ const [,, work, port, spec=''] = process.argv;
 const meta=JSON.parse(fs.readFileSync(`${work}/meta.json`,'utf8'));
 const out=`${work}/frames`; fs.mkdirSync(out,{recursive:true});
 const C=Number(process.env.CHUNK||30), PAGE=process.env.SCENE_PAGE||'scene.html', TILES=process.env.TILES||'';
-function findChrome(){ return process.env.CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'; }
+function findChrome(){ if(process.env.CHROME) return process.env.CHROME;
+  const pf=process.env.ProgramFiles||'C:\\Program Files', pf86=process.env['ProgramFiles(x86)']||'C:\\Program Files (x86)', lad=process.env.LOCALAPPDATA||'';
+  for(const p of ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/google-chrome','/usr/bin/chromium',
+    path.join(pf,'Google','Chrome','Application','chrome.exe'),path.join(pf86,'Google','Chrome','Application','chrome.exe'),
+    lad?path.join(lad,'Google','Chrome','Application','chrome.exe'):'',path.join(pf,'Microsoft','Edge','Application','msedge.exe')].filter(Boolean))
+    if(fs.existsSync(p)) return p;
+  throw new Error('找不到 Chrome：请设置 CHROME 环境变量'); }
 const exe=findChrome();
+const gpuArgs=process.platform==='darwin'?['--use-angle=metal','--enable-gpu-rasterization','--ignore-gpu-blocklist','--enable-webgl']:['--ignore-gpu-blocklist','--enable-webgl'];
 let want; if(!spec) want=[...Array(meta.frames).keys()];
 else if(spec.includes('-')){const [a,b]=spec.split('-').map(Number); want=[]; for(let f=a;f<Math.min(b,meta.frames);f++) want.push(f);}
 else want=spec.split(',').filter(Boolean).map(Number);
@@ -21,7 +28,7 @@ async function pass(list, settleMax, tag){
   for(let i=0;i<list.length;i+=C){
     const prof=path.resolve(`tmp/prof-${process.pid}-${i}`); fs.mkdirSync(prof,{recursive:true});
     const browser=await puppeteer.launch({executablePath:exe,headless:process.env.HEADLESS==='0'?false:true,protocolTimeout:900000,timeout:180000,userDataDir:prof,
-      args:['--mute-audio','--use-angle=metal','--enable-gpu-rasterization','--ignore-gpu-blocklist','--enable-webgl','--no-first-run','--no-default-browser-check','--use-mock-keychain','--password-store=basic',
+      args:['--mute-audio',...gpuArgs,'--no-first-run','--no-default-browser-check','--use-mock-keychain','--password-store=basic',
         '--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows',`--window-size=${meta.w},${meta.h}`,'--disk-cache-size=300000000','--js-flags=--max-old-space-size=1024']});
     try{
       const page=await browser.newPage(); await page.setViewport({width:meta.w,height:meta.h,deviceScaleFactor:1});

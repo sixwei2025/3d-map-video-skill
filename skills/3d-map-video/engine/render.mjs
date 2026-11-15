@@ -8,7 +8,10 @@ const meta=JSON.parse(fs.readFileSync(`${work}/meta.json`,'utf8'));
 const out=`${work}/frames`; fs.mkdirSync(out,{recursive:true});
 const C=Number(process.env.CHUNK||30), PAGE=process.env.SCENE_PAGE||'scene.html', TILES=process.env.TILES||'';
 function findChrome(){ if(process.env.CHROME) return process.env.CHROME;
-  const c=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
+  const pf=process.env.ProgramFiles||'C:\\Program Files', pf86=process.env['ProgramFiles(x86)']||'C:\\Program Files (x86)', lad=process.env.LOCALAPPDATA||'';
+  const c=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    path.join(pf,'Google','Chrome','Application','chrome.exe'),path.join(pf86,'Google','Chrome','Application','chrome.exe'),
+    lad?path.join(lad,'Google','Chrome','Application','chrome.exe'):'',path.join(pf,'Microsoft','Edge','Application','msedge.exe')].filter(Boolean);
   for(const p of c) if(fs.existsSync(p)) return p;
   const base=path.join(os.homedir(),'.cache/puppeteer/chrome-headless-shell');
   if(fs.existsSync(base)) for(const v of fs.readdirSync(base)) for(const d of fs.readdirSync(path.join(base,v))){const p=path.join(base,v,d,'chrome-headless-shell'); if(fs.existsSync(p)) return p;}
